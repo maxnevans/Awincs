@@ -1,9 +1,9 @@
 #include "MouseClick.h"
-#include "support/Console.h"
+#include "../../DebugConsole/include/DebugConsole.h"
 
 LRESULT AWC::MouseClick::operator()(std::shared_ptr<WindowComponent> window, LRESULT prevHandlerReturnValue, WPARAM wParam, LPARAM lParam, UINT messageType)
 {
-	Console::getConsole() << L"Clicked!\n";
+	DebugConsole::Console::getConsole() << L"Clicked!\n";
 
 	return 0;
 }

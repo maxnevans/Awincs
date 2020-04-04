@@ -22,29 +22,20 @@
     <Filter Include="Header Files\Components\WindowMessageHandlers">
       <UniqueIdentifier>{a57ec5a1-cf55-4af7-98d7-acadfab67509}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Support">
-      <UniqueIdentifier>{5bff6207-61af-4400-8f0d-8287b424a84c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Base">
       <UniqueIdentifier>{34c53e42-3653-4628-9990-1feea0fd6268}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Components">
       <UniqueIdentifier>{de662291-4592-4912-a009-c5ab1942fea1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Support">
-      <UniqueIdentifier>{50adf1f3-df2a-412c-976e-6cbaade3a64c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Components\WindowMessageHandlers">
       <UniqueIdentifier>{42dfb181-1574-476a-af4a-53156c85ecff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Include">
+      <UniqueIdentifier>{980dae65-e1b9-476b-8a43-c0ef5314507e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\support\Console.cpp">
-      <Filter>Source Files\Support</Filter>
-    </ClCompile>
     <ClCompile Include="src\base\Exception.cpp">
       <Filter>Source Files\Base</Filter>
     </ClCompile>
@@ -74,14 +65,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\support\Console.h">
-      <Filter>Header Files\Support</Filter>
-    </ClInclude>
     <ClInclude Include="src\base\Exception.h">
       <Filter>Header Files\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="src\support\ConsoleException.h">
-      <Filter>Header Files\Support</Filter>
     </ClInclude>
     <ClInclude Include="src\Component.h">
       <Filter>Header Files\Components</Filter>
@@ -118,6 +103,9 @@
     </ClInclude>
     <ClInclude Include="src\WindowSizingMoving.h">
       <Filter>Header Files\Components\WindowMessageHandlers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\AWC.h">
+      <Filter>Header Files\Include</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

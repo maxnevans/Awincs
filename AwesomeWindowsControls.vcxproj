@@ -26,26 +26,26 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -145,16 +145,15 @@
     <ClCompile Include="src\base\Exception.cpp" />
     <ClCompile Include="src\ButtonComponent.cpp" />
     <ClCompile Include="src\Component.cpp" />
-    <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\MouseClick.cpp" />
     <ClCompile Include="src\WindowEraseBackground.cpp" />
     <ClCompile Include="src\WindowPaint.cpp" />
-    <ClCompile Include="src\support\Console.cpp" />
     <ClCompile Include="src\WindowClose.cpp" />
     <ClCompile Include="src\WindowComponent.cpp" />
     <ClCompile Include="src\WindowSizingMoving.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\AWC.h" />
     <ClInclude Include="src\ButtonComponent.h" />
     <ClInclude Include="src\Component.h" />
     <ClInclude Include="src\base\Exception.h" />
@@ -163,13 +162,16 @@
     <ClInclude Include="src\PanelComponent.h" />
     <ClInclude Include="src\WindowEraseBackground.h" />
     <ClInclude Include="src\WindowPaint.h" />
-    <ClInclude Include="src\support\Console.h" />
-    <ClInclude Include="src\support\ConsoleException.h" />
     <ClInclude Include="src\WindowClose.h" />
     <ClInclude Include="src\WindowComponent.h" />
     <ClInclude Include="src\WindowException.h" />
     <ClInclude Include="src\WindowMessageHandler.h" />
     <ClInclude Include="src\WindowSizingMoving.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DebugConsole\DebugConsole.vcxproj">
+      <Project>{72cc32fd-8896-4520-815b-a894b10356c3}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
