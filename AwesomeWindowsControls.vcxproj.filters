@@ -36,76 +36,49 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\base\Exception.cpp">
-      <Filter>Source Files\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="src\WindowComponent.cpp">
+    <ClCompile Include="src\components\ButtonComponent.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="src\MouseClick.cpp">
-      <Filter>Source Files\Components\WindowMessageHandlers</Filter>
-    </ClCompile>
-    <ClCompile Include="src\WindowClose.cpp">
-      <Filter>Source Files\Components\WindowMessageHandlers</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Component.cpp">
+    <ClCompile Include="src\components\Component.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="src\ButtonComponent.cpp">
+    <ClCompile Include="src\WinAPIWindow.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="src\WindowPaint.cpp">
-      <Filter>Source Files\Components\WindowMessageHandlers</Filter>
-    </ClCompile>
-    <ClCompile Include="src\WindowEraseBackground.cpp">
-      <Filter>Source Files\Components\WindowMessageHandlers</Filter>
-    </ClCompile>
-    <ClCompile Include="src\WindowSizingMoving.cpp">
-      <Filter>Source Files\Components\WindowMessageHandlers</Filter>
+    <ClCompile Include="src\WindowController.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base\Exception.h">
       <Filter>Header Files\Base</Filter>
     </ClInclude>
-    <ClInclude Include="src\Component.h">
-      <Filter>Header Files\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\WindowComponent.h">
-      <Filter>Header Files\Components</Filter>
-    </ClInclude>
     <ClInclude Include="src\WindowException.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
-    <ClInclude Include="src\WindowMessageHandler.h">
-      <Filter>Header Files\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\MouseClick.h">
-      <Filter>Header Files\Components\WindowMessageHandlers</Filter>
-    </ClInclude>
-    <ClInclude Include="src\WindowClose.h">
-      <Filter>Header Files\Components\WindowMessageHandlers</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ButtonComponent.h">
-      <Filter>Header Files\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\WindowPaint.h">
-      <Filter>Header Files\Components\WindowMessageHandlers</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Drawable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\WindowEraseBackground.h">
-      <Filter>Header Files\Components\WindowMessageHandlers</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PanelComponent.h">
-      <Filter>Header Files\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\WindowSizingMoving.h">
-      <Filter>Header Files\Components\WindowMessageHandlers</Filter>
-    </ClInclude>
     <ClInclude Include="include\AWC.h">
       <Filter>Header Files\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="src\components\ButtonComponent.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\components\Component.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\components\PanelComponent.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\WinAPIWindow.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\WindowController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\WindowControllerException.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
