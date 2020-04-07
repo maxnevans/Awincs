@@ -24,8 +24,8 @@ namespace AWC
 
 	Component::Point Component::getGlobalAnchorPoint() const
 	{
-		int x = Physics::getX(anchorPoint);
-		int y = Physics::getY(anchorPoint);
+		int x = anchorPoint.x;
+		int y = anchorPoint.y;
 
 		if (auto prnt = parent.lock())
 		{
