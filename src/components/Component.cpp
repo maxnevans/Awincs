@@ -2,7 +2,7 @@
 
 namespace AWC
 {
-	void Component::setDimensions(Component::Dimensions dims)
+	void Component::setDimensions(const Component::Dimensions& dims)
 	{
 		this->dimensions = dims;
 	}
@@ -12,7 +12,7 @@ namespace AWC
 		return this->dimensions;
 	}
 
-	void Component::setAnchorPoint(Component::Point point)
+	void Component::setAnchorPoint(const Component::Point& point)
 	{
 		this->anchorPoint = point;
 	}
@@ -24,8 +24,7 @@ namespace AWC
 
 	Component::Point Component::getGlobalAnchorPoint() const
 	{
-		int x = anchorPoint.x;
-		int y = anchorPoint.y;
+		auto [x, y] = getAnchorPoint();
 
 		if (auto prnt = parent.lock())
 		{
@@ -38,7 +37,15 @@ namespace AWC
 		return {x, y};
 	}
 
-	void Component::setParent(std::shared_ptr<Component> parent)
+	Component::Point Component::transformToLocalPoint(const Point& point)
+	{
+		return {
+			point.x - anchorPoint.x,
+			point.y - anchorPoint.y
+		};
+	}
+
+	void Component::setParent(const std::shared_ptr<Component>& parent)
 	{
 		parent->addChild(shared_from_this());
 		this->parent = parent;
@@ -69,6 +76,29 @@ namespace AWC
 	{
 		for (auto& component : children)
 			component->draw(hdc);
+	}
+
+	void Component::handleEvent(const MouseEvent& e)
+	{
+		auto mouseEvent = static_cast<const ComponentEvent::MouseEvent&>(e);
+
+		ComponentEvent::MouseEvent localMouseEvent = mouseEvent;
+		localMouseEvent.point = transformToLocalPoint(mouseEvent.point);
+
+		for (const auto& child : children)
+		{
+			if (child->checkAffiliation(localMouseEvent.point))
+			{
+				child->handleEvent(localMouseEvent);
+				break;
+			}
+		}
+	}
+
+	void Component::handleEvent(const KeyEvent& e)
+	{
+		for(const auto & child : children)
+			child->handleEvent(e);
 	}
 
 	void Component::addChild(std::shared_ptr<Component> child)

@@ -1,9 +1,11 @@
-#include <cassert>
 #include <Windowsx.h>
+#include <memory>
 
+#include "../../DebugConsole/include/DebugConsole.h"
+#include "base/DebugUntils.h"
 #include "WinAPIWindow.h"
 #include "WindowException.h"
-#include "../../DebugConsole/include/DebugConsole.h"
+
 
 namespace AWC
 {
@@ -110,6 +112,12 @@ namespace AWC
 		drawQueue.push_back(cb);
 	}
 
+	void WinAPIWindow::registerEventCallback(EventCallback cb)
+	{
+		expect(!eventCallback);
+		eventCallback = cb;
+	}
+
 	LRESULT WinAPIWindow::setupWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		if (uMsg == WM_CREATE)
@@ -161,6 +169,14 @@ namespace AWC
 	LRESULT WinAPIWindow::wmLButtonUp(WPARAM wParam, LPARAM lParam)
 	{
 		DCONSOLE(L"Clicked at (" << GET_X_LPARAM(lParam) << L',' << GET_Y_LPARAM(lParam) << L");\n");
+
+		if (eventCallback)
+		{
+			ComponentEvent::MouseEvent e = {};
+			e.point = { GET_X_LPARAM(lParam) ,  GET_Y_LPARAM(lParam) };
+
+			eventCallback(e);
+		}
 
 		return 0;
 	}

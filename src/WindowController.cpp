@@ -1,8 +1,8 @@
 #include "WindowController.h"
 #include "components/Component.h"
+#include "components/ComponentEvent.h"
 
 #include <algorithm>
-
 #include "WindowControllerException.h"
 
 namespace AWC
@@ -11,6 +11,31 @@ namespace AWC
 		:
 		window(new WinAPIWindow())
 	{
+		window->registerEventCallback([&](const ComponentEvent::Event& e) {
+			switch (e.eventType)
+			{
+				case ComponentEvent::EventType::MOUSE:
+				{
+					auto mouseEvent = static_cast<const ComponentEvent::MouseEvent&>(e);
+					for (const auto& child : components)
+					{
+						if (child->checkAffiliation(mouseEvent.point))
+						{
+							child->handleEvent(mouseEvent);
+							break;
+						}
+					}
+					break;
+				}
+				case ComponentEvent::EventType::KEY:
+				{
+					auto keyEvent = static_cast<const ComponentEvent::KeyEvent&>(e);
+					for (const auto& child : components)
+						child->handleEvent(keyEvent);
+					break;
+				}
+			}
+		});
 	}
 	void WindowController::setTitle(std::wstring title)
 	{

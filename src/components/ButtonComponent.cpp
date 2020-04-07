@@ -1,4 +1,6 @@
 #include "ButtonComponent.h"
+#include "../../../DebugConsole/include/DebugConsole.h"
+#include "../Geometry.h"
 
 void AWC::ButtonComponent::draw(HDC hdc) const
 {
@@ -36,7 +38,7 @@ void AWC::ButtonComponent::draw(HDC hdc) const
 	Component::draw(hdc);
 }
 
-void AWC::ButtonComponent::setTitle(std::wstring title)
+void AWC::ButtonComponent::setTitle(const std::wstring& title)
 {
 	this->title = title;
 }
@@ -44,6 +46,20 @@ void AWC::ButtonComponent::setTitle(std::wstring title)
 std::wstring AWC::ButtonComponent::getTitle() const
 {
 	return title;
+}
+
+bool AWC::ButtonComponent::checkAffiliation(const Point& pt) const
+{
+	return Geometry::IntRectangle::checkAffiliation(getAnchorPoint(), getDimensions(), pt);
+}
+
+void AWC::ButtonComponent::handleEvent(const MouseEvent& e)
+{
+	Component::handleEvent(e);
+
+	auto mouseEvent = static_cast<const ComponentEvent::MouseEvent&>(e);
+
+	DCONSOLE(L"Button component event handling: coordinates(" << mouseEvent.point.x << L"," << mouseEvent.point.y << L")\n");
 }
 
 HFONT AWC::ButtonComponent::getFont(std::wstring fontFamily)

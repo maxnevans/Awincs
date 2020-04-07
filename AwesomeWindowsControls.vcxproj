@@ -144,17 +144,20 @@
   <ItemGroup>
     <ClCompile Include="src\components\ButtonComponent.cpp" />
     <ClCompile Include="src\components\Component.cpp" />
+    <ClCompile Include="src\components\PanelComponent.cpp" />
     <ClCompile Include="src\WinAPIWindow.cpp" />
     <ClCompile Include="src\WindowController.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\AWC.h" />
+    <ClInclude Include="src\base\DebugUntils.h" />
     <ClInclude Include="src\components\ButtonComponent.h" />
     <ClInclude Include="src\components\Component.h" />
     <ClInclude Include="src\base\Exception.h" />
     <ClInclude Include="src\components\PanelComponent.h" />
-    <ClInclude Include="src\Physics.h" />
+    <ClInclude Include="src\Geometry.h" />
     <ClInclude Include="src\WinAPIWindow.h" />
+    <ClInclude Include="src\components\ComponentEvent.h" />
     <ClInclude Include="src\WindowController.h" />
     <ClInclude Include="src\WindowControllerException.h" />
     <ClInclude Include="src\WindowException.h" />

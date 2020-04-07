@@ -48,6 +48,9 @@
     <ClCompile Include="src\WindowController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\components\PanelComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base\Exception.h">
@@ -71,13 +74,19 @@
     <ClInclude Include="src\WinAPIWindow.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
-    <ClInclude Include="src\Physics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\WindowController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\WindowControllerException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\base\DebugUntils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\components\ComponentEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Geometry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

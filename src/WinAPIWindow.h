@@ -5,7 +5,8 @@
 #include <vector>
 #include <windows.h>
 
-#include "Physics.h"
+#include "Geometry.h"
+#include "components/ComponentEvent.h"
 
 namespace AWC
 {
@@ -13,9 +14,10 @@ namespace AWC
 	{
 	private:
 
-		using Point = Physics::IntPoint2D;
-		using Dimensions = Physics::IntDimensions2D;
+		using Point = Geometry::IntPoint2D;
+		using Dimensions = Geometry::IntDimensions2D;
 		using DrawCallback = std::function<void(HDC)>;
+		using EventCallback = std::function<void(const ComponentEvent::Event&)>;
 
 		class WinAPIWindowRegisterer
 		{
@@ -42,6 +44,7 @@ namespace AWC
 		void setDimensions(Dimensions dims);
 		Dimensions getDimensions();
 		void draw(DrawCallback cb);
+		void registerEventCallback(EventCallback cb);
 
 	protected:
 		/*Window Procedure Callbacks*/
@@ -72,6 +75,7 @@ namespace AWC
 		std::wstring windowTitle									= DEFAULT_WINDOW_TITLE.data();
 		Point anchorPoint											= DEFAULT_WINDOW_ANCHOR_POINT;
 		Dimensions dimensions										= DEFAULT_WINDOW_DIMENSIONS;
+		EventCallback eventCallback									= nullptr;
 		std::vector<DrawCallback> drawQueue;
 	};
 }
