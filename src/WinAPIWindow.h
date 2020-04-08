@@ -8,7 +8,7 @@
 #include "Geometry.h"
 #include "components/ComponentEvent.h"
 
-namespace AWC
+namespace Awincs
 {
 	class WinAPIWindow
 	{

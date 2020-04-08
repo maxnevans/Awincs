@@ -2,7 +2,7 @@
 #include "Component.h"
 #include <string>
 
-namespace AWC
+namespace Awincs
 {
 	class ButtonComponent
 		:

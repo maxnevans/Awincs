@@ -6,7 +6,7 @@
 #include "WinAPIWindow.h"
 #include "components/Component.h"
 
-namespace AWC
+namespace Awincs
 {
 	class WindowController
 	{

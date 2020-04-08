@@ -1,7 +1,7 @@
 #pragma once
 #include "Component.h"
 
-namespace AWC
+namespace Awincs
 {
 	class PanelComponent
 		:

@@ -1,6 +1,6 @@
 #include "Component.h"
 
-namespace AWC
+namespace Awincs
 {
 	void Component::setDimensions(const Component::Dimensions& dims)
 	{

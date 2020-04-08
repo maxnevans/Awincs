@@ -1,7 +1,7 @@
 #pragma once
 #include "WindowException.h"
 
-namespace AWC
+namespace Awincs
 {
 
 	class WindowControllerException

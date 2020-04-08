@@ -2,7 +2,7 @@
 #include "../../../DebugConsole/include/DebugConsole.h"
 #include "../Geometry.h"
 
-void AWC::ButtonComponent::draw(HDC hdc) const
+void Awincs::ButtonComponent::draw(HDC hdc) const
 {
 	auto brush = CreateSolidBrush(backgroundColor);
 	auto prevBrush = SelectObject(hdc, brush);
@@ -19,12 +19,12 @@ void AWC::ButtonComponent::draw(HDC hdc) const
 	auto prevFont = SelectObject(hdc, font);
 
 	SIZE size = {};
-	GetTextExtentPoint32(hdc, title.c_str(), title.size(), &size);
+	GetTextExtentPoint32(hdc, title.c_str(), static_cast<int>(title.size()), &size);
 
 	int actualX = x + width / 2 - size.cx /2;
 	int actualY = y + height / 2 - size.cy / 2;
 
-	TextOut(hdc, actualX, actualY, title.c_str(), title.size());
+	TextOut(hdc, actualX, actualY, title.c_str(), static_cast<int>(title.size()));
 
 	SelectObject(hdc, prevFont);
 	DeleteObject(font);
@@ -38,22 +38,22 @@ void AWC::ButtonComponent::draw(HDC hdc) const
 	Component::draw(hdc);
 }
 
-void AWC::ButtonComponent::setTitle(const std::wstring& title)
+void Awincs::ButtonComponent::setTitle(const std::wstring& title)
 {
 	this->title = title;
 }
 
-std::wstring AWC::ButtonComponent::getTitle() const
+std::wstring Awincs::ButtonComponent::getTitle() const
 {
 	return title;
 }
 
-bool AWC::ButtonComponent::checkAffiliation(const Point& pt) const
+bool Awincs::ButtonComponent::checkAffiliation(const Point& pt) const
 {
 	return Geometry::IntRectangle::checkAffiliation(getAnchorPoint(), getDimensions(), pt);
 }
 
-void AWC::ButtonComponent::handleEvent(const MouseEvent& e)
+void Awincs::ButtonComponent::handleEvent(const MouseEvent& e)
 {
 	Component::handleEvent(e);
 
@@ -62,7 +62,7 @@ void AWC::ButtonComponent::handleEvent(const MouseEvent& e)
 	DCONSOLE(L"Button component event handling: coordinates(" << mouseEvent.point.x << L"," << mouseEvent.point.y << L")\n");
 }
 
-HFONT AWC::ButtonComponent::getFont(std::wstring fontFamily)
+HFONT Awincs::ButtonComponent::getFont(std::wstring fontFamily)
 {
 	return CreateFontW(
 		0, 0, 0, 0, 

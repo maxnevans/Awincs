@@ -1,7 +1,7 @@
 #pragma once
 #include "base/DebugUntils.h"
 
-namespace AWC
+namespace Awincs
 {
 	namespace Geometry
 	{

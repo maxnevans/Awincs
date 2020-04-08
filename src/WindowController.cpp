@@ -5,7 +5,7 @@
 #include <algorithm>
 #include "WindowControllerException.h"
 
-namespace AWC
+namespace Awincs
 {
 	WindowController::WindowController()
 		:

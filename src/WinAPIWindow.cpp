@@ -7,7 +7,7 @@
 #include "WindowException.h"
 
 
-namespace AWC
+namespace Awincs
 {
 
 	/* Window auto registration in system */

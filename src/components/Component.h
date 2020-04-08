@@ -8,7 +8,7 @@
 #include "../Geometry.h"
 #include "ComponentEvent.h"
 
-namespace AWC
+namespace Awincs
 {
 	class Component
 		:

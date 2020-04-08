@@ -150,6 +150,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\AWC.h" />
+    <ClInclude Include="include\Awincs.h" />
     <ClInclude Include="src\base\DebugUntils.h" />
     <ClInclude Include="src\components\ButtonComponent.h" />
     <ClInclude Include="src\components\Component.h" />

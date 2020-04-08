@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-namespace AWC
+namespace Awincs
 {
 	//template<typename T>
 	class Exception

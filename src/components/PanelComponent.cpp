@@ -1,12 +1,12 @@
 #include "PanelComponent.h"
 #include "../Geometry.h"
 
-bool AWC::PanelComponent::checkAffiliation(const Point& pt) const
+bool Awincs::PanelComponent::checkAffiliation(const Point& pt) const
 {
 	return Geometry::IntRectangle::checkAffiliation(getAnchorPoint(), getDimensions(), pt);
 }
 
-void AWC::PanelComponent::draw(HDC hdc) const
+void Awincs::PanelComponent::draw(HDC hdc) const
 {
 	auto brush = CreateSolidBrush(backgroundColor);
 	auto prevBrush = SelectObject(hdc, brush);

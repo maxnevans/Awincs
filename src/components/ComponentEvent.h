@@ -2,7 +2,7 @@
 #include "../base/DebugUntils.h"
 #include "../Geometry.h"
 
-namespace AWC
+namespace Awincs
 {
 	namespace ComponentEvent
 	{
