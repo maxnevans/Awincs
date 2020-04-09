@@ -1,4 +1,6 @@
+#include "../pch.h"
 #include "PanelComponent.h"
+
 #include "../Geometry.h"
 
 bool Awincs::PanelComponent::checkAffiliation(const Point& pt) const

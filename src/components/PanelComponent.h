@@ -1,4 +1,7 @@
 #pragma once
+
+#include "../pch.h"
+
 #include "Component.h"
 
 namespace Awincs

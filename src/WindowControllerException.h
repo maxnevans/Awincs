@@ -1,4 +1,5 @@
 #pragma once
+
 #include "WindowException.h"
 
 namespace Awincs

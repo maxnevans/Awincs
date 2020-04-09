@@ -1,7 +1,15 @@
+#include "../pch.h"
 #include "Component.h"
 
 namespace Awincs
 {
+	Component::Component(Dimensions dims)
+		:
+		Component()
+	{
+		this->dimensions = dims;
+	}
+
 	void Component::setDimensions(const Component::Dimensions& dims)
 	{
 		this->dimensions = dims;
@@ -34,7 +42,7 @@ namespace Awincs
 			y += globalY;
 		}
 
-		return {x, y};
+		return { x, y };
 	}
 
 	Component::Point Component::transformToLocalPoint(const Point& point)
@@ -58,7 +66,7 @@ namespace Awincs
 
 	void Component::foreachChildren(ComponentCallback cb)
 	{
-		for (auto& component : children)
+		for (const auto& component : children)
 			cb(*component);
 	}
 
@@ -74,41 +82,36 @@ namespace Awincs
 
 	void Component::draw(HDC hdc) const
 	{
-		for (auto& component : children)
+		for (const auto& component : children)
 			component->draw(hdc);
-	}
-
-	void Component::handleEvent(const MouseEvent& e)
-	{
-		auto mouseEvent = static_cast<const ComponentEvent::MouseEvent&>(e);
-
-		ComponentEvent::MouseEvent localMouseEvent = mouseEvent;
-		localMouseEvent.point = transformToLocalPoint(mouseEvent.point);
-
-		for (const auto& child : children)
-		{
-			if (child->checkAffiliation(localMouseEvent.point))
-			{
-				child->handleEvent(localMouseEvent);
-				break;
-			}
-		}
-	}
-
-	void Component::handleEvent(const KeyEvent& e)
-	{
-		for(const auto & child : children)
-			child->handleEvent(e);
 	}
 
 	void Component::addChild(std::shared_ptr<Component> child)
 	{
-		children.insert(child);
+		children.push_back(child);
 	}
-
 	void Component::removeChild(std::shared_ptr<Component> child)
 	{
-		children.erase(child);
-	}
+		auto index = std::find(children.begin(), children.end(), child);
 
+		assert(index != children.end());
+
+		children.erase(index);
+	}
+	Component::ShouldParentHandleEvent Component::handleEvent(const MouseButtonEvent& e)
+	{
+		return handleMouseEvent(e);
+	}
+	Component::ShouldParentHandleEvent Component::handleEvent(const MouseWheelEvent& e)
+	{
+		return handleMouseEvent(e);
+	}
+	Component::ShouldParentHandleEvent Component::handleEvent(const KeyEvent& e)
+	{
+		return handleNonMouseEvent(e);
+	}
+	Component::ShouldParentHandleEvent Component::handleEvent(const InputEvent& e)
+	{
+		return handleNonMouseEvent(e);
+	}
 }

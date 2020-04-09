@@ -1,9 +1,8 @@
-#include <Windowsx.h>
-#include <memory>
+#include "pch.h"
+#include "WinAPIWindow.h"
 
 #include "../../DebugConsole/include/DebugConsole.h"
 #include "base/DebugUntils.h"
-#include "WinAPIWindow.h"
 #include "WindowException.h"
 
 
@@ -38,6 +37,18 @@ namespace Awincs
 	}
 
 	WinAPIWindow::WinAPIWindow()
+		:
+		/*	
+			Just calls non-const handleEvent() methods that does nothing: 
+			remove const_cast if they does modify something in WinAPIWindowDefaultEventHandler.h 
+		*/
+		WinAPIWindow(const_cast<WinAPIWindowDefaultEventHandler&>(DEFAULT_EVENT_HANDLER))
+	{
+	}
+
+	WinAPIWindow::WinAPIWindow(ComponentEvent::ComponentEventHandler& eventHandler)
+		:
+		eventHandler(eventHandler)
 	{
 		assert(registerer.registered);
 
@@ -112,12 +123,6 @@ namespace Awincs
 		drawQueue.push_back(cb);
 	}
 
-	void WinAPIWindow::registerEventCallback(EventCallback cb)
-	{
-		expect(!eventCallback);
-		eventCallback = cb;
-	}
-
 	LRESULT WinAPIWindow::setupWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		if (uMsg == WM_CREATE)
@@ -153,14 +158,26 @@ namespace Awincs
 	{
 		switch (uMsg)
 		{
-		case WM_ERASEBKGND: return TRUE;
+		case WM_ERASEBKGND: return wmEraseBackground(wParam, lParam);
 		case WM_CLOSE: return wmClose(wParam, lParam);
 		case WM_PAINT: return wmPaint(wParam, lParam);
 		case WM_SIZING:
 		case WM_MOVING: return wmSizingMoving(wParam, lParam);
 		case WM_SIZE: return wmSize(wParam, lParam);
 		case WM_MOVE: return wmMove(wParam, lParam);
+		case WM_CHAR: return wmChar(wParam, lParam);
+		case WM_UNICHAR: return wmUnichar(wParam, lParam);
+		case WM_MOUSEWHEEL: return wmMouseWheel(wParam, lParam);
+		case WM_RBUTTONDOWN: return wmRButtonDown(wParam, lParam);
+		case WM_RBUTTONUP: return wmRButtonUp(wParam, lParam);
+		case WM_LBUTTONDOWN: return wmLButtonDown(wParam, lParam);
 		case WM_LBUTTONUP: return wmLButtonUp(wParam, lParam);
+		case WM_MBUTTONUP: return wmMButtonUp(wParam, lParam);
+		case WM_MBUTTONDOWN: return wmMButtonDown(wParam, lParam);
+		case WM_XBUTTONUP: return wmXButtonUp(wParam, lParam);
+		case WM_XBUTTONDOWN: return wmXButtonDown(wParam, lParam);
+		case WM_KEYUP: return wmKeyUp(wParam, lParam);
+		case WM_KEYDOWN: return wmKeyDown(wParam, lParam);
 		}
 
 		return DefWindowProcW(hWnd, uMsg, wParam, lParam);
@@ -168,15 +185,146 @@ namespace Awincs
 
 	LRESULT WinAPIWindow::wmLButtonUp(WPARAM wParam, LPARAM lParam)
 	{
-		DCONSOLE(L"Clicked at (" << GET_X_LPARAM(lParam) << L',' << GET_Y_LPARAM(lParam) << L");\n");
+		using namespace ComponentEvent;
 
-		if (eventCallback)
-		{
-			ComponentEvent::MouseEvent e = {};
-			e.point = { GET_X_LPARAM(lParam) ,  GET_Y_LPARAM(lParam) };
+		DCONSOLE(L"Left button up: (" << GET_X_LPARAM(lParam) << L',' << GET_Y_LPARAM(lParam) << L")\n");
 
-			eventCallback(e);
-		}
+		return wmMouseButton(wParam, lParam, MouseButtonType::LEFT, MouseButtonAction::UP);
+	}
+
+	LRESULT WinAPIWindow::wmLButtonDown(WPARAM wParam, LPARAM lParam)
+	{
+		using namespace ComponentEvent;
+
+		DCONSOLE(L"Left button down: (" << GET_X_LPARAM(lParam) << L',' << GET_Y_LPARAM(lParam) << L")\n");
+
+		return wmMouseButton(wParam, lParam, MouseButtonType::LEFT, MouseButtonAction::DOWN);
+	}
+
+	LRESULT WinAPIWindow::wmRButtonUp(WPARAM wParam, LPARAM lParam)
+	{
+		using namespace ComponentEvent;
+
+		DCONSOLE(L"Right button up: (" << GET_X_LPARAM(lParam) << L',' << GET_Y_LPARAM(lParam) << L")\n");
+
+		return wmMouseButton(wParam, lParam, MouseButtonType::RIGHT, MouseButtonAction::UP);
+	}
+
+	LRESULT WinAPIWindow::wmRButtonDown(WPARAM wParam, LPARAM lParam)
+	{
+		using namespace ComponentEvent;
+
+		DCONSOLE(L"Right button down: (" << GET_X_LPARAM(lParam) << L',' << GET_Y_LPARAM(lParam) << L")\n");
+
+		return wmMouseButton(wParam, lParam, MouseButtonType::RIGHT, MouseButtonAction::DOWN);
+	}
+
+	LRESULT WinAPIWindow::wmMButtonUp(WPARAM wParam, LPARAM lParam)
+	{
+		return wmMouseButton(wParam, lParam, ComponentEvent::MouseButtonType::MIDDLE, ComponentEvent::MouseButtonAction::UP);
+	}
+
+	LRESULT WinAPIWindow::wmMButtonDown(WPARAM wParam, LPARAM lParam)
+	{
+		return wmMouseButton(wParam, lParam, ComponentEvent::MouseButtonType::MIDDLE, ComponentEvent::MouseButtonAction::DOWN);
+	}
+
+	LRESULT WinAPIWindow::wmXButtonUp(WPARAM wParam, LPARAM lParam)
+	{
+		ComponentEvent::MouseButtonType mb;
+		auto xButton = GET_XBUTTON_WPARAM(wParam);
+
+		if (xButton & XBUTTON1) mb = ComponentEvent::MouseButtonType::XBUTTON;
+		if (xButton & XBUTTON2) mb = ComponentEvent::MouseButtonType::YBUTTON;
+
+		wmMouseButton(wParam, lParam, mb, ComponentEvent::MouseButtonAction::UP);
+
+		return TRUE;
+	}
+
+	LRESULT WinAPIWindow::wmXButtonDown(WPARAM wParam, LPARAM lParam)
+	{
+		ComponentEvent::MouseButtonType mb;
+		auto xButton = GET_XBUTTON_WPARAM(wParam);
+
+		if (xButton & XBUTTON1) mb = ComponentEvent::MouseButtonType::XBUTTON;
+		if (xButton & XBUTTON2) mb = ComponentEvent::MouseButtonType::YBUTTON;
+
+		wmMouseButton(wParam, lParam, mb, ComponentEvent::MouseButtonAction::DOWN);
+
+		return TRUE;
+	}
+
+	LRESULT WinAPIWindow::wmMouseButton(WPARAM wParam, LPARAM lParam, ComponentEvent::MouseButtonType mbt, ComponentEvent::MouseButtonAction mba)
+	{
+		auto [modKeys, pressedMouseKeys] = parseMouseKeyState(GET_KEYSTATE_WPARAM(wParam));
+
+		ComponentEvent::MouseButtonEvent e = {};
+		e.point = { GET_X_LPARAM(lParam) ,  GET_Y_LPARAM(lParam) };
+		e.buttonType = mbt;
+		e.action = mba;
+		e.modificationKeys = modKeys;
+		e.pressedMouseButtons = pressedMouseKeys;
+
+		eventHandler.handleEvent(e);
+
+		return 0;
+	}
+
+	LRESULT WinAPIWindow::wmMouseWheel(WPARAM wParam, LPARAM lParam)
+	{
+		auto wheelDelta = GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA;
+		auto [modKeys, mouseButtons] = parseMouseKeyState(GET_KEYSTATE_WPARAM(wParam));
+
+		ComponentEvent::MouseWheelEvent e = {};
+		e.point = { GET_X_LPARAM(lParam) ,  GET_Y_LPARAM(lParam) };
+		e.direction = wheelDelta > 0  ? ComponentEvent::ScrollDirection::UP: ComponentEvent::ScrollDirection::DOWN;
+		e.amountScrolled = std::abs(wheelDelta);
+		e.modificationKeys = modKeys;
+		e.pressedMouseButtons = mouseButtons;
+
+		eventHandler.handleEvent(e);
+
+		return 0;
+	}
+
+	LRESULT WinAPIWindow::wmUnichar(WPARAM wParam, LPARAM lParam)
+	{
+		return DefWindowProc(hWnd, WM_UNICHAR, wParam, lParam);
+	}
+
+	LRESULT WinAPIWindow::wmChar(WPARAM wParam, LPARAM lParam)
+	{
+		ComponentEvent::InputEvent e = {};
+		e.character = wParam;
+
+		eventHandler.handleEvent(e);
+
+		return 0;
+	}
+
+	LRESULT WinAPIWindow::wmKeyUp(WPARAM wParam, LPARAM lParam)
+	{
+		using namespace ComponentEvent;
+
+		KeyEvent e = {};
+		e.action = KeyEventAction::UP;
+		e.keyCode = wParam;
+
+		eventHandler.handleEvent(e);
+
+		return 0;
+	}
+
+	LRESULT WinAPIWindow::wmKeyDown(WPARAM wParam, LPARAM lParam)
+	{
+		using namespace ComponentEvent;
+
+		KeyEvent e = {};
+		e.action = KeyEventAction::DOWN;
+		e.keyCode = wParam;
+
+		eventHandler.handleEvent(e);
 
 		return 0;
 	}
@@ -231,6 +379,28 @@ namespace Awincs
 	{
 		setAnchorPoint({ LOWORD(lParam), HIWORD(lParam) });
 		return 0;
+	}
+
+	LRESULT WinAPIWindow::wmEraseBackground(WPARAM wParam, LPARAM lParam)
+	{
+		return TRUE;
+	}
+
+	std::pair<std::set<ComponentEvent::ModificationKey>, std::set<ComponentEvent::MouseButtonType>> WinAPIWindow::parseMouseKeyState(WORD keyState)
+	{
+		std::set<ComponentEvent::ModificationKey> modificationKeys;
+		if (keyState & MK_CONTROL) modificationKeys.insert(ComponentEvent::ModificationKey::CTRL);
+		if (keyState & MK_SHIFT) modificationKeys.insert(ComponentEvent::ModificationKey::SHIFT);
+
+
+		std::set<ComponentEvent::MouseButtonType> pressedMouseButtons;
+		if (keyState & MK_LBUTTON) pressedMouseButtons.insert(ComponentEvent::MouseButtonType::LEFT);
+		if (keyState & MK_RBUTTON) pressedMouseButtons.insert(ComponentEvent::MouseButtonType::RIGHT);
+		if (keyState & MK_MBUTTON) pressedMouseButtons.insert(ComponentEvent::MouseButtonType::MIDDLE);
+		if (keyState & MK_XBUTTON1) pressedMouseButtons.insert(ComponentEvent::MouseButtonType::XBUTTON);
+		if (keyState & MK_XBUTTON2) pressedMouseButtons.insert(ComponentEvent::MouseButtonType::YBUTTON);
+
+		return { modificationKeys, pressedMouseButtons };
 	}
 
 }

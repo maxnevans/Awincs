@@ -1,4 +1,5 @@
 #pragma once
+
 #include "base/Exception.h"
 
 namespace Awincs

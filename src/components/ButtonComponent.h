@@ -1,6 +1,8 @@
 #pragma once
+
+#include "../pch.h"
+
 #include "Component.h"
-#include <string>
 
 namespace Awincs
 {
@@ -12,8 +14,9 @@ namespace Awincs
 		virtual void draw(HDC hdc) const override;
 		void setTitle(const std::wstring& title);
 		std::wstring getTitle() const;
-		virtual bool checkAffiliation(const Point& pt) const override;
-		virtual void handleEvent(const MouseEvent& e) override;
+		virtual ShouldParentHandleEvent checkAffiliation(const Point& pt) const override;
+		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::MouseButtonEvent& e) override;
+		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::KeyEvent& e) override;
 		
 	private:
 		static HFONT getFont(std::wstring fontFamily);
