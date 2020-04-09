@@ -4,13 +4,15 @@
 
 #include "../Geometry.h"
 #include "../ComponentEventHandler.h"
+#include "../WindowStateHandler.h"
 
 namespace Awincs
 {
 	class Component
 		:
 		public std::enable_shared_from_this<Component>,
-		public ComponentEvent::ComponentEventHandler
+		public ComponentEvent::ComponentEventHandler,
+		public WindowStateHandler
 	{
 	public:
 		using Point = Geometry::IntPoint2D;
@@ -28,19 +30,23 @@ namespace Awincs
 
 	public:
 		Component() = default;
-		Component(Dimensions dims);
+		Component(const Point& anchorPoint, const Dimensions& dims);
 		void setDimensions(const Dimensions& dims);
 		Dimensions getDimensions() const;
 		void setAnchorPoint(const Point& point);
 		Point getAnchorPoint() const;
 		Point getGlobalAnchorPoint() const;
-		Point transformToLocalPoint(const Point& point);
+		Point transformToLocalPoint(const Point& point) const;
 		virtual void setParent(const std::shared_ptr<Component>& parent);
 		virtual void unsetParent();
 		void foreachChildren(ComponentCallback cb);
 		virtual void redraw();
 		virtual bool shouldRedraw() const;
-		virtual bool checkAffiliation(const Point& pt) const { return false; };
+		virtual bool checkAffiliationIgnoreChildren(const Point& pt) const;
+		virtual bool checkAffiliationDontIgnoreChildren(const Point&) const;
+		virtual void closeWindow() override;
+		virtual void minimizeWindow() override;
+		virtual void maximizeWindow() override;
 		virtual ShouldParentHandleEvent handleEvent(const MouseButtonEvent&);
 		virtual ShouldParentHandleEvent handleEvent(const MouseWheelEvent&);
 		virtual ShouldParentHandleEvent handleEvent(const KeyEvent&);
@@ -48,6 +54,7 @@ namespace Awincs
 
 	protected:
 		virtual void draw(HDC hdc) const;
+		std::weak_ptr<Component> getParent();
 
 	protected:
 		virtual void addChild(std::shared_ptr<Component> child);
@@ -64,7 +71,7 @@ namespace Awincs
 			for (const auto& child : children)
 			{
 				eCopy.point = child->transformToLocalPoint(e.point);
-				if (child->checkAffiliation(e.point))
+				if (child->checkAffiliationIgnoreChildren(e.point))
 					return child->handleEvent(eCopy);
 			}
 		}

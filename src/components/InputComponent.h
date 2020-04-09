@@ -3,6 +3,7 @@
 #include "../pch.h"
 
 #include "Component.h"
+#include "../WindowStateHandler.h"
 
 namespace Awincs
 {

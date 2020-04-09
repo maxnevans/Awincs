@@ -28,7 +28,7 @@ namespace Awincs
 		class GeometryShape
 		{
 		public:
-			virtual bool checkAffiliation(const Point2D<T>& pt) const = 0;
+			virtual bool checkAffiliationIgnoreChildren(const Point2D<T>& pt) const = 0;
 		};
 		
 		template<typename T>
@@ -46,7 +46,7 @@ namespace Awincs
 				expect(dimensions.height >= 0);
 			}
 
-			static bool checkAffiliation(const Point2D<T>& anchorPoint, const Dimensions2D<T> dimensions, const Point2D<T>& pt)
+			static bool checkAffiliationIgnoreChildren(const Point2D<T>& anchorPoint, const Dimensions2D<T> dimensions, const Point2D<T>& pt)
 			{
 				auto [x, y] = anchorPoint;
 				auto [width, height] = dimensions;
@@ -55,9 +55,9 @@ namespace Awincs
 					&& (pt.y >= y) && (pt.y < y + height);
 			}
 
-			virtual bool checkAffiliation(const Point2D<T>& pt) const
+			virtual bool checkAffiliationIgnoreChildren(const Point2D<T>& pt) const
 			{
-				return Rectangle::checkAffiliation(anchorPoint, dimensions, pt);
+				return Rectangle::checkAffiliationIgnoreChildren(anchorPoint, dimensions, pt);
 			}
 			
 			inline const Point2D<T>& getAnchorPoint() const

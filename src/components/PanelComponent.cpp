@@ -3,9 +3,9 @@
 
 #include "../Geometry.h"
 
-bool Awincs::PanelComponent::checkAffiliation(const Point& pt) const
+bool Awincs::PanelComponent::checkAffiliationIgnoreChildren(const Point& pt) const
 {
-	return Geometry::IntRectangle::checkAffiliation(getAnchorPoint(), getDimensions(), pt);
+	return Geometry::IntRectangle::checkAffiliationIgnoreChildren(getAnchorPoint(), getDimensions(), pt);
 }
 
 void Awincs::PanelComponent::draw(HDC hdc) const

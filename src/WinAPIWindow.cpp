@@ -36,26 +36,18 @@ namespace Awincs
 		registered = true;
 	}
 
-	WinAPIWindow::WinAPIWindow()
+	WinAPIWindow::WinAPIWindow(WindowController& windowController, const Point& anchorPoint, const Dimensions& dims)
 		:
-		/*	
-			Just calls non-const handleEvent() methods that does nothing: 
-			remove const_cast if they does modify something in WinAPIWindowDefaultEventHandler.h 
-		*/
-		WinAPIWindow(const_cast<WinAPIWindowDefaultEventHandler&>(DEFAULT_EVENT_HANDLER))
-	{
-	}
-
-	WinAPIWindow::WinAPIWindow(ComponentEvent::ComponentEventHandler& eventHandler)
-		:
-		eventHandler(eventHandler)
+		anchorPoint(anchorPoint),
+		dimensions(dims),
+		windowController(windowController)
 	{
 		assert(registerer.registered);
 
 		auto [x, y] = getAnchorPoint();
 		auto [width, height] = getDimensions();
 
-		CreateWindowW(WINDOW_CLASS_NAME.data(), windowTitle.c_str(), WS_OVERLAPPEDWINDOW,
+		CreateWindowW(WINDOW_CLASS_NAME.data(), windowTitle.c_str(), WS_POPUP,
 			x, y, width, height, NULL, NULL, hInstance, this);
 
 		if (auto errorCode = GetLastError(); errorCode != ERROR_SUCCESS)
@@ -82,18 +74,33 @@ namespace Awincs
 		ShowWindow(hWnd, SW_HIDE);
 	}
 
+	void WinAPIWindow::minimize()
+	{
+		ShowWindow(hWnd, SW_MINIMIZE);
+	}
+
+	void WinAPIWindow::maximize()
+	{
+		ShowWindow(hWnd, SW_MAXIMIZE);
+	}
+
+	void WinAPIWindow::close()
+	{
+		SendMessage(hWnd, WM_CLOSE, NULL, NULL);
+	}
+
 	HWND WinAPIWindow::getHWND()
 	{
 		return this->hWnd;
 	}
 
-	void WinAPIWindow::setTitle(std::wstring title)
+	void WinAPIWindow::setTitle(const std::wstring& title)
 	{
 		windowTitle = title;
 		SetWindowTextW(hWnd, title.c_str());
 	}
 
-	std::wstring WinAPIWindow::getTitle() const
+	const std::wstring& WinAPIWindow::getTitle() const
 	{
 		return windowTitle;
 	}
@@ -101,9 +108,10 @@ namespace Awincs
 	void WinAPIWindow::setAnchorPoint(Point point)
 	{
 		anchorPoint = point;
+		expect(SetWindowPos(hWnd, NULL, point.x, point.y, 0, 0, SWP_NOSIZE | SWP_NOZORDER) == TRUE);
 	}
 
-	WinAPIWindow::Point WinAPIWindow::getAnchorPoint()
+	const WinAPIWindow::Point& WinAPIWindow::getAnchorPoint()
 	{
 		return anchorPoint;
 	}
@@ -111,9 +119,10 @@ namespace Awincs
 	void WinAPIWindow::setDimensions(Dimensions dims)
 	{
 		dimensions = dims;
+		expect(SetWindowPos(hWnd, NULL, 0, 0, dims.width, dims.height, SWP_NOMOVE | SWP_NOZORDER) == TRUE);
 	}
 
-	WinAPIWindow::Dimensions WinAPIWindow::getDimensions()
+	const WinAPIWindow::Dimensions& WinAPIWindow::getDimensions()
 	{
 		return dimensions;
 	}
@@ -121,7 +130,7 @@ namespace Awincs
 	void WinAPIWindow::draw(DrawCallback cb)
 	{
 		drawQueue.push_back(cb);
-		InvalidateRect(hWnd, NULL, FALSE);
+		expect(InvalidateRect(hWnd, NULL, FALSE) == TRUE);
 	}
 
 	LRESULT WinAPIWindow::setupWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -179,6 +188,7 @@ namespace Awincs
 		case WM_XBUTTONDOWN: return wmXButtonDown(wParam, lParam);
 		case WM_KEYUP: return wmKeyUp(wParam, lParam);
 		case WM_KEYDOWN: return wmKeyDown(wParam, lParam);
+		case WM_NCHITTEST: return wmNCHitTest(wParam, lParam);
 		}
 
 		return DefWindowProcW(hWnd, uMsg, wParam, lParam);
@@ -267,7 +277,7 @@ namespace Awincs
 		e.modificationKeys = modKeys;
 		e.pressedMouseButtons = pressedMouseKeys;
 
-		eventHandler.handleEvent(e);
+		windowController.handleEvent(e);
 
 		return 0;
 	}
@@ -284,7 +294,7 @@ namespace Awincs
 		e.modificationKeys = modKeys;
 		e.pressedMouseButtons = mouseButtons;
 
-		eventHandler.handleEvent(e);
+		windowController.handleEvent(e);
 
 		return 0;
 	}
@@ -299,7 +309,7 @@ namespace Awincs
 		ComponentEvent::InputEvent e = {};
 		e.character = wParam;
 
-		eventHandler.handleEvent(e);
+		windowController.handleEvent(e);
 
 		return 0;
 	}
@@ -312,7 +322,7 @@ namespace Awincs
 		e.action = KeyEventAction::UP;
 		e.keyCode = wParam;
 
-		eventHandler.handleEvent(e);
+		windowController.handleEvent(e);
 
 		return 0;
 	}
@@ -325,7 +335,7 @@ namespace Awincs
 		e.action = KeyEventAction::DOWN;
 		e.keyCode = wParam;
 
-		eventHandler.handleEvent(e);
+		windowController.handleEvent(e);
 
 		return 0;
 	}
@@ -364,27 +374,69 @@ namespace Awincs
 	{
 		PRECT pRect = reinterpret_cast<PRECT>(lParam);
 
-		setAnchorPoint({ pRect->left, pRect->top });
-		setDimensions({ pRect->right - pRect->left, pRect->bottom - pRect->top });
+		anchorPoint = { pRect->left, pRect->top };
+		dimensions = { pRect->right - pRect->left, pRect->bottom - pRect->top };
 
 		return TRUE;
 	}
 
 	LRESULT WinAPIWindow::wmSize(WPARAM wParam, LPARAM lParam)
 	{
-		setDimensions({ LOWORD(lParam), HIWORD(lParam) });
+		dimensions = { LOWORD(lParam), HIWORD(lParam) };
 		return 0;
 	}
 
 	LRESULT WinAPIWindow::wmMove(WPARAM wParam, LPARAM lParam)
 	{
-		setAnchorPoint({ LOWORD(lParam), HIWORD(lParam) });
+		anchorPoint = { LOWORD(lParam), HIWORD(lParam) };
 		return 0;
 	}
 
 	LRESULT WinAPIWindow::wmEraseBackground(WPARAM wParam, LPARAM lParam)
 	{
 		return TRUE;
+	}
+
+	LRESULT WinAPIWindow::wmNCHitTest(WPARAM wParam, LPARAM lParam)
+	{
+		WindowController::Point p{GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+
+		if (auto borders = windowController.testSizeCapture(p); !borders.empty())
+		{
+			bool bottom = borders.find(WindowBorder::BOTTOM) != borders.end();
+			bool top = borders.find(WindowBorder::TOP) != borders.end();
+			bool left = borders.find(WindowBorder::LEFT) != borders.end();
+			bool right = borders.find(WindowBorder::RIGHT) != borders.end();
+			
+			if (top && left)
+				return HTTOPLEFT;
+
+			if (top && right)
+				return HTTOPRIGHT;
+
+			if (bottom && left)
+				return HTBOTTOMLEFT;
+
+			if (bottom && right)
+				return HTBOTTOMRIGHT;
+
+			if (top)
+				return HTTOP;
+
+			if (bottom)
+				return HTBOTTOM;
+
+			if (left)
+				return HTLEFT;
+
+			if (right)
+				return HTRIGHT;
+		}
+
+		if (windowController.testMoveCapture(p))
+			return HTCAPTION;
+
+		return HTCLIENT;
 	}
 
 	std::pair<std::set<ComponentEvent::ModificationKey>, std::set<ComponentEvent::MouseButtonType>> WinAPIWindow::parseMouseKeyState(WORD keyState)

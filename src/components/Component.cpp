@@ -3,10 +3,11 @@
 
 namespace Awincs
 {
-	Component::Component(Dimensions dims)
+	Component::Component(const Point& anchorPoint, const Dimensions& dims)
 		:
 		Component()
 	{
+		this->anchorPoint = anchorPoint;
 		this->dimensions = dims;
 	}
 
@@ -45,7 +46,7 @@ namespace Awincs
 		return { x, y };
 	}
 
-	Component::Point Component::transformToLocalPoint(const Point& point)
+	Component::Point Component::transformToLocalPoint(const Point& point) const
 	{
 		return {
 			point.x - anchorPoint.x,
@@ -84,10 +85,55 @@ namespace Awincs
 		return performRedraw;
 	}
 
+	bool Component::checkAffiliationIgnoreChildren(const Point& pt) const
+	{
+		return false;
+	}
+
+	bool Component::checkAffiliationDontIgnoreChildren(const Point& p) const
+	{
+		if (checkAffiliationIgnoreChildren(p))
+		{
+			for (const auto& child : children)
+				if (child->checkAffiliationIgnoreChildren(transformToLocalPoint(p)))
+					return false;
+
+			return true;
+		}
+
+		return false;
+	}
+
+	void Component::closeWindow()
+	{
+		auto parent = getParent().lock();
+		expect(parent);
+		parent->closeWindow();
+	}
+
+	void Component::minimizeWindow()
+	{
+		auto parent = getParent().lock();
+		expect(parent);
+		parent->minimizeWindow();
+	}
+
+	void Component::maximizeWindow()
+	{
+		auto parent = getParent().lock();
+		expect(parent);
+		parent->maximizeWindow();
+	}
+
 	void Component::draw(HDC hdc) const
 	{
 		for (const auto& component : children)
 			component->draw(hdc);
+	}
+
+	std::weak_ptr<Component> Component::getParent()
+	{
+		return parent;
 	}
 
 	void Component::addChild(std::shared_ptr<Component> child)

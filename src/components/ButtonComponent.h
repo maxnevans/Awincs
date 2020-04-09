@@ -13,7 +13,7 @@ namespace Awincs
 	public:
 		void setTitle(const std::wstring& title);
 		std::wstring getTitle() const;
-		virtual ShouldParentHandleEvent checkAffiliation(const Point& pt) const override;
+		virtual ShouldParentHandleEvent checkAffiliationIgnoreChildren(const Point& pt) const override;
 		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::MouseButtonEvent& e) override;
 		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::KeyEvent& e) override;
 

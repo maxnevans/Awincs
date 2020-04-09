@@ -52,9 +52,9 @@ namespace Awincs
 		return title;
 	}
 
-	bool ButtonComponent::checkAffiliation(const Point& pt) const
+	bool ButtonComponent::checkAffiliationIgnoreChildren(const Point& pt) const
 	{
-		return Geometry::IntRectangle::checkAffiliation(getAnchorPoint(), getDimensions(), pt);
+		return Geometry::IntRectangle::checkAffiliationIgnoreChildren(getAnchorPoint(), getDimensions(), pt);
 	}
 
 	bool ButtonComponent::handleEvent(const ComponentEvent::MouseButtonEvent& e)
