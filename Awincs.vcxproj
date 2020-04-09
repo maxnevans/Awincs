@@ -167,6 +167,12 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../pch.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="src\components\CloseButtonComponent.cpp">
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../pch.h</PrecompiledHeaderFile>
+    </ClCompile>
     <ClCompile Include="src\components\Component.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../pch.h</PrecompiledHeaderFile>
@@ -203,6 +209,7 @@
     <ClInclude Include="include\Awincs.h" />
     <ClInclude Include="src\base\DebugUntils.h" />
     <ClInclude Include="src\components\ButtonComponent.h" />
+    <ClInclude Include="src\components\CloseButtonComponent.h" />
     <ClInclude Include="src\components\Component.h" />
     <ClInclude Include="src\base\Exception.h" />
     <ClInclude Include="src\components\InputComponent.h" />
@@ -212,10 +219,10 @@
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\WinAPIWindow.h" />
     <ClInclude Include="src\components\ComponentEvent.h" />
-    <ClInclude Include="src\WinAPIWindowDefaultEventHandler.h" />
     <ClInclude Include="src\WindowController.h" />
     <ClInclude Include="src\WindowControllerException.h" />
     <ClInclude Include="src\WindowException.h" />
+    <ClInclude Include="src\WindowStateHandler.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DebugConsole\DebugConsole.vcxproj">
