@@ -21,6 +21,9 @@ namespace Awincs
 		void hide();
 		void redraw();
 
+	protected:
+		virtual void draw(HDC) const override;
+
 	private:
 		std::unique_ptr<WinAPIWindow> window;
 	};

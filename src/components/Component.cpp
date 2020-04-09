@@ -73,6 +73,10 @@ namespace Awincs
 	void Component::redraw()
 	{
 		performRedraw = true;
+		auto p = parent.lock();
+
+		if (p)
+			p->redraw();
 	}
 
 	bool Component::shouldRedraw() const

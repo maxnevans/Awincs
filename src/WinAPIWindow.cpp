@@ -121,6 +121,7 @@ namespace Awincs
 	void WinAPIWindow::draw(DrawCallback cb)
 	{
 		drawQueue.push_back(cb);
+		InvalidateRect(hWnd, NULL, FALSE);
 	}
 
 	LRESULT WinAPIWindow::setupWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

@@ -81,12 +81,9 @@ namespace Awincs
 
 	HFONT ButtonComponent::getFont(std::wstring fontFamily)
 	{
-		return CreateFontW(
-			0, 0, 0, 0,
-			FW_NORMAL, FALSE, FALSE, FALSE,
+		return CreateFontW(0, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
 			DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-			CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, fontFamily.c_str()
-			);
+			CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, fontFamily.c_str());
 	}
 
 }

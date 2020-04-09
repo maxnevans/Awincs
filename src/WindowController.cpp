@@ -3,6 +3,7 @@
 
 #include "components/ComponentEvent.h"
 #include "WindowControllerException.h"
+#include "../../DebugConsole/include/DebugConsole.h"
 
 namespace Awincs
 {
@@ -28,9 +29,14 @@ namespace Awincs
 	}
 	void WindowController::redraw()
 	{
+		DCONSOLE(L"WindowController::redraw()\n");
 		window->draw([&](HDC hdc) {
 			this->draw(hdc); 
 		});
+	}
+	void WindowController::draw(HDC hdc) const
+	{
+		Component::draw(hdc);
 	}
 }
 

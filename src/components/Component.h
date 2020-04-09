@@ -40,16 +40,18 @@ namespace Awincs
 		void foreachChildren(ComponentCallback cb);
 		virtual void redraw();
 		virtual bool shouldRedraw() const;
-		virtual void draw(HDC hdc) const;
 		virtual bool checkAffiliation(const Point& pt) const { return false; };
-
-	protected:
-		virtual void addChild(std::shared_ptr<Component> child);
-		virtual void removeChild(std::shared_ptr<Component> child);
 		virtual ShouldParentHandleEvent handleEvent(const MouseButtonEvent&);
 		virtual ShouldParentHandleEvent handleEvent(const MouseWheelEvent&);
 		virtual ShouldParentHandleEvent handleEvent(const KeyEvent&);
 		virtual ShouldParentHandleEvent handleEvent(const InputEvent&);
+
+	protected:
+		virtual void draw(HDC hdc) const;
+
+	protected:
+		virtual void addChild(std::shared_ptr<Component> child);
+		virtual void removeChild(std::shared_ptr<Component> child);
 
 	private:
 	template<typename GMouseEvent>

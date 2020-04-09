@@ -11,12 +11,14 @@ namespace Awincs
 		public Component
 	{
 	public:
-		virtual void draw(HDC hdc) const override;
 		void setTitle(const std::wstring& title);
 		std::wstring getTitle() const;
 		virtual ShouldParentHandleEvent checkAffiliation(const Point& pt) const override;
 		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::MouseButtonEvent& e) override;
 		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::KeyEvent& e) override;
+
+	protected:
+		virtual void draw(HDC hdc) const override;
 		
 	private:
 		static HFONT getFont(std::wstring fontFamily);

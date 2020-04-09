@@ -12,6 +12,8 @@ namespace Awincs
 	{
 	public:
 		virtual bool checkAffiliation(const Point& pt) const override;
+
+	protected:
 		virtual void draw(HDC hdc) const override;
 
 	private:
