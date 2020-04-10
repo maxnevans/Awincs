@@ -423,10 +423,10 @@ namespace Awincs
 		PRECT pRect = reinterpret_cast<PRECT>(lParam);
 
 		anchorPoint = { pRect->left, pRect->top };
-		dimensions.normal = { pRect->right - pRect->left, pRect->bottom - pRect->top };
-
+		
 		// To fix Microsoft bug with WS_POPUP window when changing size
-		cuDimensions.normal = dimensions.normal - resizeBorderWidth;
+		cuDimensions.normal = { pRect->right - pRect->left, pRect->bottom - pRect->top };
+		dimensions.normal = cuDimensions.normal + resizeBorderWidth;
 
 		windowController.handleEvent(ComponentEvent::Window::ResizeEvent{});
 
@@ -438,10 +438,10 @@ namespace Awincs
 		PRECT pRect = reinterpret_cast<PRECT>(lParam);
 
 		anchorPoint = { pRect->left, pRect->top };
-		dimensions.normal = { pRect->right - pRect->left, pRect->bottom - pRect->top };
 
 		// To fix Microsoft bug with WS_POPUP window when changing size
-		cuDimensions.normal = dimensions.normal - resizeBorderWidth;
+		cuDimensions.normal = { pRect->right - pRect->left, pRect->bottom - pRect->top };
+		dimensions.normal = cuDimensions.normal + resizeBorderWidth;
 
 		windowController.handleEvent(ComponentEvent::Window::MoveEvent{});
 
@@ -482,7 +482,7 @@ namespace Awincs
 
 		if (resizeBorderWidth)
 		{
-			auto [width, height] = dimensions.normal;
+			auto [width, height] = dimensions.normal - resizeBorderWidth;
 			auto [ax, ay] = anchorPoint;
 
 			int x = p.x - ax;
