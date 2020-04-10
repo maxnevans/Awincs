@@ -52,6 +52,7 @@ namespace Awincs
 
 	private:
 		static constexpr COLORREF DEFAULT_BACKGROUND_COLOR = RGB(10, 20, 30);
+		static constexpr int BACKGROUND_FIX_ON_RESIZE = 100;
 
 		COLORREF backgroundColor = DEFAULT_BACKGROUND_COLOR;
 		std::unique_ptr<WinAPIWindow> window;

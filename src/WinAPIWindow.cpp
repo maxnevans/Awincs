@@ -62,8 +62,11 @@ namespace Awincs
 		auto [x, y] = this->anchorPoint;
 		auto [width, height] = this->dimensions.normal;
 
-		CreateWindowW(WINDOW_CLASS_NAME.data(), windowTitle.c_str(), WS_POPUP,
+		CreateWindow(WINDOW_CLASS_NAME.data(), windowTitle.c_str(), WS_POPUP,
 			x, y, width, height, NULL, NULL, hInstance, this);
+
+		//auto ret = UpdateLayeredWindow(hWnd, NULL, NULL, NULL, NULL, NULL, DEFAULT_WINDOW_BACKGROUND_COLOR, NULL, ULW_OPAQUE);
+		//expect(ret != FALSE); 
 
 		if (auto errorCode = GetLastError(); errorCode != ERROR_SUCCESS)
 		{

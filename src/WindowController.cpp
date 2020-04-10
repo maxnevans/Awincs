@@ -138,7 +138,8 @@ namespace Awincs
 
 		auto [width, height] = window->getDimensions();
 
-		Rectangle(hdc, 0, 0, width, height);
+		// To fix black background on resizing
+		Rectangle(hdc, 0, 0, width + BACKGROUND_FIX_ON_RESIZE, height + BACKGROUND_FIX_ON_RESIZE);
 
 		SelectObject(hdc, prevPen);
 		DeleteObject(pen);
