@@ -20,6 +20,111 @@ namespace Awincs
 		{
 			T width;
 			T height;
+
+			Dimensions2D<T>& operator-=(const Dimensions2D<T>& p)
+			{
+				width -= p.width;
+				height -= p.height;
+
+				expect(width >= 0);
+				expect(height >= 0);
+
+				return *this;
+			}
+
+			Dimensions2D<T>& operator+=(const Dimensions2D<T>& p)
+			{
+				width += p.width;
+				height += p.height;
+
+				expect(width >= 0);
+				expect(height >= 0);
+
+				return *this;
+			}
+
+			template<typename Number>
+			Dimensions2D<T>& operator+=(Number n)
+			{
+
+				width += n;
+				height += n;
+
+				expect(width >= 0);
+				expect(height >= 0);
+
+				return *this;
+			}
+
+			template<typename Number>
+			Dimensions2D<T>& operator-=(Number n)
+			{
+				width -= n;
+				height -= n;
+
+				expect(width >= 0);
+				expect(height >= 0);
+
+				return *this;
+			}
+
+			template<typename Number>
+			Dimensions2D<T>& operator*=(Number n)
+			{
+				expect(n >= 0);
+
+				width *= n;
+				height *= n;
+
+				return *this;
+			}
+
+			template<typename Number>
+			Dimensions2D<T>& operator/=(Number n)
+			{
+				expect(n > 0);
+
+				width /= n;
+				height /= n;
+
+				return *this;
+			}
+
+			template<typename Number>
+			Dimensions2D<T> operator+(Number n) const
+			{
+				Dimensions2D<T> d = {width + n, height + n};
+
+				expect(d.width >= 0);
+				expect(d.height >= 0);
+
+				return d;
+			}
+
+			template<typename Number>
+			Dimensions2D<T> operator-(Number n) const
+			{
+				Dimensions2D<T> d = {width - n, height - n};
+
+				expect(d.width >= 0);
+				expect(d.height >= 0);
+
+				return d;
+			}
+
+			template<typename Number>
+			Dimensions2D<T> operator*(Number n) const
+			{
+				expect(n >= 0);
+				return { width * n, height * n };
+			}
+
+			template<typename Number>
+			Dimensions2D<T> operator/(Number n) const
+			{
+				expect(n > 0);
+				return { width / n, height / n };
+			}
 		};
 
 		using IntDimensions2D = Dimensions2D<int>;
