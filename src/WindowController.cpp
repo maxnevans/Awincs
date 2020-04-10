@@ -15,7 +15,7 @@ namespace Awincs
 
 	WindowController::WindowController(const Point& anchorPoint, const Dimensions& dims)
 		:
-		Component(),
+		Component({0, 0}, dims),
 		window(std::make_unique<WinAPIWindow>(*this, anchorPoint, dims))
 	{
 	}
@@ -81,34 +81,12 @@ namespace Awincs
 	{
 		moveCapture = cb;
 	}
-	void WindowController::setSizeCaptures(CaptureCallback left, CaptureCallback right, CaptureCallback top, CaptureCallback bottom)
-	{
-		sizeCaptures = {
-			{WindowBorder::LEFT, left},
-			{WindowBorder::RIGHT, right},
-			{WindowBorder::TOP, top},
-			{WindowBorder::BOTTOM, bottom},
-		};
-	}
 	bool WindowController::testMoveCapture(const Point& p) const
 	{
 		if (!moveCapture)
 			return false;
 
 		return moveCapture(transformToLocalPoint(p));
-	}
-	std::set<WindowBorder> WindowController::testSizeCapture(const Point& p) const
-	{
-		std::set<WindowBorder> retVal;
-
-		if (sizeCaptures.empty())
-			return {};
-
-		for (auto [border, cb] : sizeCaptures)
-			if (cb && cb(transformToLocalPoint(p)))
-				retVal.insert(border);
-
-		return retVal;
 	}
 	bool WindowController::checkAffiliationIgnoreChildren(const Point& p) const
 	{
@@ -132,7 +110,7 @@ namespace Awincs
 		auto pen = CreatePen(PS_NULL, 0, RGB(0, 0, 0));
 		auto prevPen = SelectObject(hdc, pen);
 
-		auto [width, height] = getDimensions();
+		auto [width, height] = window->getDimensions();
 
 		Rectangle(hdc, 0, 0, width, height);
 

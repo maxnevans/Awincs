@@ -39,13 +39,14 @@ namespace Awincs
 	WinAPIWindow::WinAPIWindow(WindowController& windowController, const Point& anchorPoint, const Dimensions& dims)
 		:
 		anchorPoint(anchorPoint),
-		dimensions(dims),
+		cachedUserDimensions(dims),
+		dimensions(dims + DEFAULT_RESIZE_BORDER_WIDTH),
 		windowController(windowController)
 	{
 		assert(registerer.registered);
 
-		auto [x, y] = getAnchorPoint();
-		auto [width, height] = getDimensions();
+		auto [x, y] = this->anchorPoint;
+		auto [width, height] = this->dimensions;
 
 		CreateWindowW(WINDOW_CLASS_NAME.data(), windowTitle.c_str(), WS_POPUP,
 			x, y, width, height, NULL, NULL, hInstance, this);
@@ -89,7 +90,7 @@ namespace Awincs
 		SendMessage(hWnd, WM_CLOSE, NULL, NULL);
 	}
 
-	HWND WinAPIWindow::getHWND()
+	HWND WinAPIWindow::getHWND() const
 	{
 		return this->hWnd;
 	}
@@ -111,26 +112,39 @@ namespace Awincs
 		expect(SetWindowPos(hWnd, NULL, point.x, point.y, 0, 0, SWP_NOSIZE | SWP_NOZORDER) == TRUE);
 	}
 
-	const WinAPIWindow::Point& WinAPIWindow::getAnchorPoint()
+	const WinAPIWindow::Point& WinAPIWindow::getAnchorPoint() const
 	{
 		return anchorPoint;
 	}
 
 	void WinAPIWindow::setDimensions(Dimensions dims)
 	{
-		dimensions = dims;
+		// To fix Microsoft bug with WS_POPUP window when changing size
+		dimensions = dims + resizeBorderWidth;
+		cachedUserDimensions = dims;
+
 		expect(SetWindowPos(hWnd, NULL, 0, 0, dims.width, dims.height, SWP_NOMOVE | SWP_NOZORDER) == TRUE);
 	}
 
-	const WinAPIWindow::Dimensions& WinAPIWindow::getDimensions()
+	const WinAPIWindow::Dimensions& WinAPIWindow::getDimensions() const
 	{
-		return dimensions;
+		return cachedUserDimensions;
 	}
 
 	void WinAPIWindow::draw(DrawCallback cb)
 	{
 		drawQueue.push_back(cb);
 		expect(InvalidateRect(hWnd, NULL, FALSE) == TRUE);
+	}
+
+	void WinAPIWindow::setResizeBorderWidth(int width)
+	{
+		expect(width >= 0);
+
+		// To fix Microsoft bug with WS_POPUP window when changing size
+		dimensions = cachedUserDimensions + width;
+
+		resizeBorderWidth = width;
 	}
 
 	LRESULT WinAPIWindow::setupWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -168,6 +182,7 @@ namespace Awincs
 	{
 		switch (uMsg)
 		{
+		case WM_CREATE: return wmCreate(wParam, lParam);
 		case WM_ERASEBKGND: return wmEraseBackground(wParam, lParam);
 		case WM_CLOSE: return wmClose(wParam, lParam);
 		case WM_PAINT: return wmPaint(wParam, lParam);
@@ -189,6 +204,7 @@ namespace Awincs
 		case WM_KEYUP: return wmKeyUp(wParam, lParam);
 		case WM_KEYDOWN: return wmKeyDown(wParam, lParam);
 		case WM_NCHITTEST: return wmNCHitTest(wParam, lParam);
+		case WM_NCCALCSIZE: return wmNCCalcSize(wParam, lParam);
 		}
 
 		return DefWindowProcW(hWnd, uMsg, wParam, lParam);
@@ -196,38 +212,30 @@ namespace Awincs
 
 	LRESULT WinAPIWindow::wmLButtonUp(WPARAM wParam, LPARAM lParam)
 	{
-		using namespace ComponentEvent;
-
 		DCONSOLE(L"Left button up: (" << GET_X_LPARAM(lParam) << L',' << GET_Y_LPARAM(lParam) << L")\n");
 
-		return wmMouseButton(wParam, lParam, MouseButtonType::LEFT, MouseButtonAction::UP);
+		return wmMouseButton(wParam, lParam, ComponentEvent::MouseButtonType::LEFT, ComponentEvent::MouseButtonAction::UP);
 	}
 
 	LRESULT WinAPIWindow::wmLButtonDown(WPARAM wParam, LPARAM lParam)
 	{
-		using namespace ComponentEvent;
-
 		DCONSOLE(L"Left button down: (" << GET_X_LPARAM(lParam) << L',' << GET_Y_LPARAM(lParam) << L")\n");
 
-		return wmMouseButton(wParam, lParam, MouseButtonType::LEFT, MouseButtonAction::DOWN);
+		return wmMouseButton(wParam, lParam, ComponentEvent::MouseButtonType::LEFT, ComponentEvent::MouseButtonAction::DOWN);
 	}
 
 	LRESULT WinAPIWindow::wmRButtonUp(WPARAM wParam, LPARAM lParam)
 	{
-		using namespace ComponentEvent;
-
 		DCONSOLE(L"Right button up: (" << GET_X_LPARAM(lParam) << L',' << GET_Y_LPARAM(lParam) << L")\n");
 
-		return wmMouseButton(wParam, lParam, MouseButtonType::RIGHT, MouseButtonAction::UP);
+		return wmMouseButton(wParam, lParam, ComponentEvent::MouseButtonType::RIGHT, ComponentEvent::MouseButtonAction::UP);
 	}
 
 	LRESULT WinAPIWindow::wmRButtonDown(WPARAM wParam, LPARAM lParam)
 	{
-		using namespace ComponentEvent;
-
 		DCONSOLE(L"Right button down: (" << GET_X_LPARAM(lParam) << L',' << GET_Y_LPARAM(lParam) << L")\n");
 
-		return wmMouseButton(wParam, lParam, MouseButtonType::RIGHT, MouseButtonAction::DOWN);
+		return wmMouseButton(wParam, lParam, ComponentEvent::MouseButtonType::RIGHT, ComponentEvent::MouseButtonAction::DOWN);
 	}
 
 	LRESULT WinAPIWindow::wmMButtonUp(WPARAM wParam, LPARAM lParam)
@@ -351,7 +359,8 @@ namespace Awincs
 		PAINTSTRUCT ps = {};
 		HDC hdc = BeginPaint(hWnd, &ps);
 
-		auto [width, height] = getDimensions();
+		auto [width, height] = dimensions;
+
 		HDC memHdc = CreateCompatibleDC(hdc);
 		HBITMAP hBitmap = CreateCompatibleBitmap(hdc, width, height);
 		SelectObject(memHdc, hBitmap);
@@ -377,18 +386,25 @@ namespace Awincs
 		anchorPoint = { pRect->left, pRect->top };
 		dimensions = { pRect->right - pRect->left, pRect->bottom - pRect->top };
 
+		// To fix Microsoft bug with WS_POPUP window when changing size
+		cachedUserDimensions = dimensions - resizeBorderWidth;
+
 		return TRUE;
 	}
 
 	LRESULT WinAPIWindow::wmSize(WPARAM wParam, LPARAM lParam)
 	{
 		dimensions = { LOWORD(lParam), HIWORD(lParam) };
+
+		// To fix Microsoft bug with WS_POPUP window when changing size
+		cachedUserDimensions = dimensions - resizeBorderWidth;
+
 		return 0;
 	}
 
 	LRESULT WinAPIWindow::wmMove(WPARAM wParam, LPARAM lParam)
 	{
-		anchorPoint = { LOWORD(lParam), HIWORD(lParam) };
+		anchorPoint = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 		return 0;
 	}
 
@@ -401,42 +417,57 @@ namespace Awincs
 	{
 		WindowController::Point p{GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
 
-		if (auto borders = windowController.testSizeCapture(p); !borders.empty())
+		if (resizeBorderWidth)
 		{
-			bool bottom = borders.find(WindowBorder::BOTTOM) != borders.end();
-			bool top = borders.find(WindowBorder::TOP) != borders.end();
-			bool left = borders.find(WindowBorder::LEFT) != borders.end();
-			bool right = borders.find(WindowBorder::RIGHT) != borders.end();
+			auto [width, height] = dimensions;
+			auto [ax, ay] = anchorPoint;
+
+			int x = p.x - ax;
+			int y = p.y - ay;
+
+			bool left = x < resizeBorderWidth;
+			bool right = x >= (width - resizeBorderWidth);
+			bool top = y < resizeBorderWidth;
+			bool bottom = y >= (height - resizeBorderWidth);
 			
-			if (top && left)
-				return HTTOPLEFT;
-
-			if (top && right)
-				return HTTOPRIGHT;
-
-			if (bottom && left)
-				return HTBOTTOMLEFT;
-
-			if (bottom && right)
-				return HTBOTTOMRIGHT;
-
-			if (top)
-				return HTTOP;
-
-			if (bottom)
-				return HTBOTTOM;
-
-			if (left)
-				return HTLEFT;
-
-			if (right)
-				return HTRIGHT;
+			if (top && left) return HTTOPLEFT;
+			if (top && right) return HTTOPRIGHT;
+			if (bottom && left) return HTBOTTOMLEFT;
+			if (bottom && right) return HTBOTTOMRIGHT;
+			if (top) return HTTOP;
+			if (bottom) return HTBOTTOM;
+			if (left) return HTLEFT;
+			if (right) return HTRIGHT;
 		}
 
 		if (windowController.testMoveCapture(p))
 			return HTCAPTION;
 
 		return HTCLIENT;
+	}
+
+	
+	LRESULT WinAPIWindow::wmNCCalcSize(WPARAM wParam, LPARAM lParam)
+	{
+		// To fix Microsoft bug with WS_POPUP window when changing size
+		if (wParam && resizeBorderWidth)
+		{
+			NCCALCSIZE_PARAMS* params = reinterpret_cast<NCCALCSIZE_PARAMS*>(lParam);
+			params->rgrc[0].bottom += resizeBorderWidth;
+			params->rgrc[0].right += resizeBorderWidth;
+			return 0;
+		}
+		return DefWindowProc(hWnd, WM_NCCALCSIZE, wParam, lParam);
+	}
+
+	LRESULT WinAPIWindow::wmCreate(WPARAM wParam, LPARAM lParam)
+	{
+		// To fix Microsoft bug with WS_POPUP window when changing size
+
+		CREATESTRUCT* windowInfo = reinterpret_cast<CREATESTRUCT*>(lParam);
+		expect(MoveWindow(hWnd, windowInfo->x, windowInfo->y, windowInfo->cx - resizeBorderWidth, windowInfo->cy - resizeBorderWidth, TRUE));
+
+		return DefWindowProc(hWnd, WM_CREATE, wParam, lParam);
 	}
 
 	std::pair<std::set<ComponentEvent::ModificationKey>, std::set<ComponentEvent::MouseButtonType>> WinAPIWindow::parseMouseKeyState(WORD keyState)
@@ -454,6 +485,17 @@ namespace Awincs
 		if (keyState & MK_XBUTTON2) pressedMouseButtons.insert(ComponentEvent::MouseButtonType::YBUTTON);
 
 		return { modificationKeys, pressedMouseButtons };
+	}
+
+	void WinAPIWindow::moveWindow(const Point& newAnchorPoint)
+	{
+		// To fix Microsoft bug with WS_POPUP window when changing size
+		expect(MoveWindow(hWnd, newAnchorPoint.x, newAnchorPoint.y, dimensions.width - resizeBorderWidth, dimensions.height - resizeBorderWidth, TRUE));
+	}
+
+	void WinAPIWindow::redraw()
+	{
+		expect(RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_NOERASE | RDW_INTERNALPAINT));
 	}
 
 }

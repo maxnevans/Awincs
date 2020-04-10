@@ -10,14 +10,6 @@ namespace Awincs
 {
 	class WinAPIWindow;
 
-	enum class WindowBorder
-	{
-		LEFT,
-		RIGHT,
-		TOP,
-		BOTTOM
-	};
-
 	class WindowController
 		:
 		public Component
@@ -41,9 +33,7 @@ namespace Awincs
 		void hide();
 		void redraw();
 		void setMoveCapture(CaptureCallback);
-		void setSizeCaptures(CaptureCallback left, CaptureCallback right, CaptureCallback top, CaptureCallback bottom);
 		bool testMoveCapture(const Point&) const;
-		std::set<WindowBorder> testSizeCapture(const Point&) const;
 		virtual bool checkAffiliationIgnoreChildren(const Point& p) const override;
 		Point transformToLocalPoint(const Point& p) const;
 		virtual void closeWindow() override;
@@ -58,7 +48,6 @@ namespace Awincs
 
 		COLORREF backgroundColor = DEFAULT_BACKGROUND_COLOR;
 		std::unique_ptr<WinAPIWindow> window;
-		std::map<WindowBorder, CaptureCallback> sizeCaptures;
 		CaptureCallback moveCapture;
 	};
 }

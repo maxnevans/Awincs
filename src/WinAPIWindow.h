@@ -37,14 +37,15 @@ namespace Awincs
 		void minimize();
 		void maximize();
 		void close();
-		HWND getHWND();
+		HWND getHWND()const;
 		void setTitle(const std::wstring& title);
 		const std::wstring& getTitle() const;
 		void setAnchorPoint(Point point);
-		const Point& getAnchorPoint();
+		const Point& getAnchorPoint() const;
 		void setDimensions(Dimensions dims);
-		const Dimensions& getDimensions();
+		const Dimensions& getDimensions() const;
 		void draw(DrawCallback cb);
+		void setResizeBorderWidth(int width);
 
 	protected:
 		/*Window Procedure Callbacks*/
@@ -76,15 +77,20 @@ namespace Awincs
 		LRESULT wmMove(WPARAM wParam, LPARAM lParam);
 		LRESULT wmEraseBackground(WPARAM wParam, LPARAM lParam);
 		LRESULT wmNCHitTest(WPARAM wParam, LPARAM lParam);
+		LRESULT wmNCCalcSize(WPARAM wParam, LPARAM lParam);
+		LRESULT wmCreate(WPARAM wParam, LPARAM lParam);
 
 		std::pair<std::set<ComponentEvent::ModificationKey>, std::set<ComponentEvent::MouseButtonType>> parseMouseKeyState(WORD keyState);
+		void moveWindow(const Point& ap);
+		void redraw();
 
 	public:
 		static constexpr std::wstring_view DEFAULT_WINDOW_TITLE = L"Default Window";
-		static constexpr Dimensions DEFAULT_WINDOW_DIMENSIONS = { 1280, 720 };
+		static constexpr Dimensions DEFAULT_WINDOW_DIMENSIONS = { 1285, 725 };
 		static constexpr Point DEFAULT_WINDOW_ANCHOR_POINT = { 100, 100 };
 		static constexpr std::wstring_view WINDOW_CLASS_NAME = L"WindowComponent";
 		static constexpr COLORREF DEFAULT_WINDOW_BACKGROUND_COLOR = RGB(0x10, 0x20, 0x30);
+		static constexpr int DEFAULT_RESIZE_BORDER_WIDTH = 5;
 
 	private:
 		static WinAPIWindowRegisterer registerer;
@@ -94,6 +100,11 @@ namespace Awincs
 		std::wstring windowTitle													= DEFAULT_WINDOW_TITLE.data();
 		Point anchorPoint															= DEFAULT_WINDOW_ANCHOR_POINT;
 		Dimensions dimensions														= DEFAULT_WINDOW_DIMENSIONS;
+
+		// To fix Microsoft bug with WS_POPUP window when changing size don't use this inside WinAPIWindow class
+		Dimensions cachedUserDimensions												= DEFAULT_WINDOW_DIMENSIONS - DEFAULT_RESIZE_BORDER_WIDTH;
+
+		int resizeBorderWidth														= DEFAULT_RESIZE_BORDER_WIDTH;
 		WindowController& windowController;
 		std::vector<DrawCallback> drawQueue;
 	};
