@@ -7,12 +7,6 @@
 
 namespace Awincs
 {
-	WindowController::WindowController()
-		:
-		WindowController(WinAPIWindow::DEFAULT_WINDOW_ANCHOR_POINT, WinAPIWindow::DEFAULT_WINDOW_DIMENSIONS)
-	{
-	}
-
 	WindowController::WindowController(const Point& anchorPoint, const Dimensions& dims)
 		:
 		Component({0, 0}, dims),
@@ -35,9 +29,29 @@ namespace Awincs
 		window->setDimensions(dims);
 	}
 
+	void WindowController::setMaxDimensions(const Dimensions& dims)
+	{
+		window->setMaxDimensions(dims);
+	}
+
+	void WindowController::setMinDimensions(const Dimensions& dims)
+	{
+		window->setMinDimensions(dims);
+	}
+
 	const WindowController::Dimensions& WindowController::getDimensions() const
 	{
 		return window->getDimensions();
+	}
+
+	const WindowController::Dimensions& WindowController::getMaxDimensions() const
+	{
+		return window->getMaxDimensions();
+	}
+
+	const WindowController::Dimensions& WindowController::getMinDimensions() const
+	{
+		return window->getMinDimensions();
 	}
 
 	void WindowController::setAnchorPoint(const Point& p)

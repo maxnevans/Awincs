@@ -18,7 +18,7 @@ namespace Awincs
 		using CaptureCallback = std::function<bool(Point)>;
 
 	public:
-		WindowController();
+		WindowController() = default;
 		WindowController(const Point& anchorPoint, const Dimensions& dims);
 		WindowController(const WindowController&) = delete;
 		WindowController& operator=(const WindowController&) = delete;
@@ -26,7 +26,11 @@ namespace Awincs
 		void setTitle(const std::wstring& title);
 		const std::wstring& getTitle() const;
 		void setDimensions(const Dimensions& dims);
+		void setMaxDimensions(const Dimensions& dims);
+		void setMinDimensions(const Dimensions& dims);
 		const Dimensions& getDimensions() const;
+		const Dimensions& getMaxDimensions() const;
+		const Dimensions& getMinDimensions() const;
 		void setAnchorPoint(const Point&);
 		const Point& getAnchorPoint() const;
 		void show();

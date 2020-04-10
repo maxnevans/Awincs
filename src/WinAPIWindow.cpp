@@ -39,14 +39,14 @@ namespace Awincs
 	WinAPIWindow::WinAPIWindow(WindowController& windowController, const Point& anchorPoint, const Dimensions& dims)
 		:
 		anchorPoint(anchorPoint),
-		cachedUserDimensions(dims),
-		dimensions(dims + DEFAULT_RESIZE_BORDER_WIDTH),
+		cuDimensions({ dims, DEFAULT_MAXIMUM_DIMENSIONS - DEFAULT_RESIZE_BORDER_WIDTH, DEFAULT_MINIMUM_DIMENSIONS - DEFAULT_RESIZE_BORDER_WIDTH }),
+		dimensions({ dims + DEFAULT_RESIZE_BORDER_WIDTH,  DEFAULT_MAXIMUM_DIMENSIONS, DEFAULT_MINIMUM_DIMENSIONS }),
 		windowController(windowController)
 	{
 		assert(registerer.registered);
 
 		auto [x, y] = this->anchorPoint;
-		auto [width, height] = this->dimensions;
+		auto [width, height] = this->dimensions.normal;
 
 		CreateWindowW(WINDOW_CLASS_NAME.data(), windowTitle.c_str(), WS_POPUP,
 			x, y, width, height, NULL, NULL, hInstance, this);
@@ -58,6 +58,11 @@ namespace Awincs
 
 		ShowWindow(hWnd, SW_HIDE);
 		UpdateWindow(hWnd);
+	}
+
+	WinAPIWindow::WinAPIWindow(WindowController& window)
+		:WinAPIWindow(window, DEFAULT_WINDOW_ANCHOR_POINT, DEFAULT_WINDOW_DIMENSIONS)
+	{
 	}
 
 	WinAPIWindow::~WinAPIWindow()
@@ -120,15 +125,15 @@ namespace Awincs
 	void WinAPIWindow::setDimensions(Dimensions dims)
 	{
 		// To fix Microsoft bug with WS_POPUP window when changing size
-		dimensions = dims + resizeBorderWidth;
-		cachedUserDimensions = dims;
+		dimensions.normal = dims + resizeBorderWidth;
+		cuDimensions.normal = dims;
 
 		expect(SetWindowPos(hWnd, NULL, 0, 0, dims.width, dims.height, SWP_NOMOVE | SWP_NOZORDER) == TRUE);
 	}
 
 	const WinAPIWindow::Dimensions& WinAPIWindow::getDimensions() const
 	{
-		return cachedUserDimensions;
+		return cuDimensions.normal;
 	}
 
 	void WinAPIWindow::draw(DrawCallback cb)
@@ -142,9 +147,39 @@ namespace Awincs
 		expect(width >= 0);
 
 		// To fix Microsoft bug with WS_POPUP window when changing size
-		dimensions = cachedUserDimensions + width;
+		dimensions.normal = cuDimensions.normal + width;
 
 		resizeBorderWidth = width;
+	}
+
+	void WinAPIWindow::setMinDimensions(const Dimensions& dim)
+	{
+		// To fix Microsoft bug with WS_POPUP window when changing size
+		dimensions.min = dim + resizeBorderWidth;
+		cuDimensions.min = dim;
+
+		// Apply dimensions
+		moveWindow(anchorPoint);
+	}
+
+	void WinAPIWindow::setMaxDimensions(const Dimensions& dim)
+	{
+		// To fix Microsoft bug with WS_POPUP window when changing size
+		dimensions.max = dim + resizeBorderWidth;
+		cuDimensions.max = dim;
+
+		// Apply dimensions
+		moveWindow(anchorPoint);
+	}
+
+	const WinAPIWindow::Dimensions& WinAPIWindow::getMinDimensions()
+	{
+		return dimensions.min;
+	}
+
+	const WinAPIWindow::Dimensions& WinAPIWindow::getMaxDimensions()
+	{
+		return dimensions.max;
 	}
 
 	LRESULT WinAPIWindow::setupWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -205,6 +240,7 @@ namespace Awincs
 		case WM_KEYDOWN: return wmKeyDown(wParam, lParam);
 		case WM_NCHITTEST: return wmNCHitTest(wParam, lParam);
 		case WM_NCCALCSIZE: return wmNCCalcSize(wParam, lParam);
+		case WM_GETMINMAXINFO: return wmGetMinMaxInfo(wParam, lParam);
 		}
 
 		return DefWindowProcW(hWnd, uMsg, wParam, lParam);
@@ -359,7 +395,7 @@ namespace Awincs
 		PAINTSTRUCT ps = {};
 		HDC hdc = BeginPaint(hWnd, &ps);
 
-		auto [width, height] = dimensions;
+		auto [width, height] = dimensions.normal;
 
 		HDC memHdc = CreateCompatibleDC(hdc);
 		HBITMAP hBitmap = CreateCompatibleBitmap(hdc, width, height);
@@ -384,20 +420,20 @@ namespace Awincs
 		PRECT pRect = reinterpret_cast<PRECT>(lParam);
 
 		anchorPoint = { pRect->left, pRect->top };
-		dimensions = { pRect->right - pRect->left, pRect->bottom - pRect->top };
+		dimensions.normal = { pRect->right - pRect->left, pRect->bottom - pRect->top };
 
 		// To fix Microsoft bug with WS_POPUP window when changing size
-		cachedUserDimensions = dimensions - resizeBorderWidth;
+		cuDimensions.normal = dimensions.normal - resizeBorderWidth;
 
 		return TRUE;
 	}
 
 	LRESULT WinAPIWindow::wmSize(WPARAM wParam, LPARAM lParam)
 	{
-		dimensions = { LOWORD(lParam), HIWORD(lParam) };
+		dimensions.normal = { LOWORD(lParam), HIWORD(lParam) };
 
 		// To fix Microsoft bug with WS_POPUP window when changing size
-		cachedUserDimensions = dimensions - resizeBorderWidth;
+		cuDimensions.normal = dimensions.normal - resizeBorderWidth;
 
 		return 0;
 	}
@@ -419,7 +455,7 @@ namespace Awincs
 
 		if (resizeBorderWidth)
 		{
-			auto [width, height] = dimensions;
+			auto [width, height] = dimensions.normal;
 			auto [ax, ay] = anchorPoint;
 
 			int x = p.x - ax;
@@ -470,6 +506,18 @@ namespace Awincs
 		return DefWindowProc(hWnd, WM_CREATE, wParam, lParam);
 	}
 
+	LRESULT WinAPIWindow::wmGetMinMaxInfo(WPARAM wParam, LPARAM lParam)
+	{
+		MINMAXINFO* minMax = reinterpret_cast<MINMAXINFO*>(lParam);
+
+		if (dimensions.min.width != ZERO_DIMENSIONS.width) minMax->ptMinTrackSize.x = dimensions.min.width;
+		if (dimensions.min.height != ZERO_DIMENSIONS.height) minMax->ptMinTrackSize.y = dimensions.min.height;
+		if (dimensions.max.width != ZERO_DIMENSIONS.width) minMax->ptMaxTrackSize.x = dimensions.max.width;
+		if (dimensions.max.height != ZERO_DIMENSIONS.height) minMax->ptMaxTrackSize.y = dimensions.max.height;
+
+		return DefWindowProc(hWnd, WM_GETMINMAXINFO, wParam, lParam);
+	}
+
 	std::pair<std::set<ComponentEvent::ModificationKey>, std::set<ComponentEvent::MouseButtonType>> WinAPIWindow::parseMouseKeyState(WORD keyState)
 	{
 		std::set<ComponentEvent::ModificationKey> modificationKeys;
@@ -489,8 +537,10 @@ namespace Awincs
 
 	void WinAPIWindow::moveWindow(const Point& newAnchorPoint)
 	{
+		auto [width, height] = dimensions.normal;
+
 		// To fix Microsoft bug with WS_POPUP window when changing size
-		expect(MoveWindow(hWnd, newAnchorPoint.x, newAnchorPoint.y, dimensions.width - resizeBorderWidth, dimensions.height - resizeBorderWidth, TRUE));
+		expect(MoveWindow(hWnd, newAnchorPoint.x, newAnchorPoint.y, width - resizeBorderWidth, height - resizeBorderWidth, TRUE));
 	}
 
 	void WinAPIWindow::redraw()
