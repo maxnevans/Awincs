@@ -91,13 +91,15 @@ namespace Awincs
 	}
 	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::MoveEvent& e)
 	{
-		expect(Component::handleEvent(e));
+		auto shouldHandleEvent = Component::handleEvent(e);
+		expect(shouldHandleEvent);
 		p_redraw();
 		return true;
 	}
 	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::ResizeEvent& e)
 	{
-		expect(Component::handleEvent(e));
+		auto shouldHandleEvent = Component::handleEvent(e);
+		expect(shouldHandleEvent);
 		p_redraw();
 		return true;
 	}

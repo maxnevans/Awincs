@@ -14,7 +14,7 @@ namespace Awincs
 
 	WinAPIWindow::WinAPIWindowRegisterer::WinAPIWindowRegisterer()
 	{
-		assert(!registered);
+		expect(!registered);
 
 		WNDCLASSEXW wndClass = {};
 
@@ -57,7 +57,7 @@ namespace Awincs
 
 	void WinAPIWindow::create()
 	{
-		assert(registerer.registered);
+		expect(registerer.registered);
 
 		auto [x, y] = this->anchorPoint;
 		auto [width, height] = this->dimensions.normal;
@@ -118,7 +118,8 @@ namespace Awincs
 	void WinAPIWindow::setAnchorPoint(Point point)
 	{
 		anchorPoint = point;
-		expect(SetWindowPos(hWnd, NULL, point.x, point.y, 0, 0, SWP_NOSIZE | SWP_NOZORDER) == TRUE);
+		auto ret = SetWindowPos(hWnd, NULL, point.x, point.y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		expect(ret == TRUE);
 	}
 
 	const WinAPIWindow::Point& WinAPIWindow::getAnchorPoint() const
@@ -131,8 +132,8 @@ namespace Awincs
 		// To fix Microsoft bug with WS_POPUP window when changing size
 		dimensions.normal = dims + resizeBorderWidth;
 		cuDimensions.normal = dims;
-
-		expect(SetWindowPos(hWnd, NULL, 0, 0, dims.width, dims.height, SWP_NOMOVE | SWP_NOZORDER) == TRUE);
+		auto ret = SetWindowPos(hWnd, NULL, 0, 0, dims.width, dims.height, SWP_NOMOVE | SWP_NOZORDER);
+		expect(ret == TRUE);
 	}
 
 	const WinAPIWindow::Dimensions& WinAPIWindow::getDimensions() const
@@ -143,8 +144,8 @@ namespace Awincs
 	void WinAPIWindow::draw(DrawCallback cb)
 	{
 		drawQueue.emplace_back(std::move(cb));
-
-		expect(InvalidateRect(hWnd, NULL, FALSE) == TRUE);
+		auto ret = InvalidateRect(hWnd, NULL, FALSE);
+		expect(ret == TRUE);
 	}
 
 	void WinAPIWindow::setResizeBorderWidth(int width)
@@ -202,10 +203,10 @@ namespace Awincs
 
 		window->hWnd = hWnd;
 
-		if (SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG>(window)) == FALSE && GetLastError() != ERROR_SUCCESS)
+		if (SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(window)) == FALSE && GetLastError() != ERROR_SUCCESS)
 			throw WindowException(L"Failed to set GWLP_USERDATA when handling setupWindowProc");
 
-		if (SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG>(WinAPIWindow::proxyWindowProc)) == FALSE && GetLastError() != ERROR_SUCCESS)
+		if (SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WinAPIWindow::proxyWindowProc)) == FALSE && GetLastError() != ERROR_SUCCESS)
 			throw WindowException(L"Failed to set GWLP_WNDPROC when handling setupWindowProc with proxyWindowProc");
 
 		return window->windowProc(uMsg, wParam, lParam);
@@ -356,7 +357,7 @@ namespace Awincs
 	LRESULT WinAPIWindow::wmChar(WPARAM wParam, LPARAM lParam)
 	{
 		ComponentEvent::Keyboard::InputEvent e = {};
-		e.character = wParam;
+		e.character = static_cast<wchar_t>(wParam);
 
 		static_cast<ComponentEvent::Handler&>(windowController).handleEvent(e);
 
@@ -367,7 +368,7 @@ namespace Awincs
 	{
 		ComponentEvent::Keyboard::KeyEvent e = {};
 		e.action = ComponentEvent::Keyboard::KeyEventAction::UP;
-		e.keyCode = wParam;
+		e.keyCode = static_cast<int>(wParam);
 
 		static_cast<ComponentEvent::Handler&>(windowController).handleEvent(e);
 
@@ -378,7 +379,7 @@ namespace Awincs
 	{
 		ComponentEvent::Keyboard::KeyEvent e = {};
 		e.action = ComponentEvent::Keyboard::KeyEventAction::DOWN;
-		e.keyCode = wParam;
+		e.keyCode = static_cast<int>(wParam);
 
 		static_cast<ComponentEvent::Handler&>(windowController).handleEvent(e);
 
@@ -528,7 +529,8 @@ namespace Awincs
 		// To fix Microsoft bug with WS_POPUP window when changing size
 
 		CREATESTRUCT* windowInfo = reinterpret_cast<CREATESTRUCT*>(lParam);
-		expect(MoveWindow(hWnd, windowInfo->x, windowInfo->y, windowInfo->cx - resizeBorderWidth, windowInfo->cy - resizeBorderWidth, TRUE));
+		auto ret = MoveWindow(hWnd, windowInfo->x, windowInfo->y, windowInfo->cx - resizeBorderWidth, windowInfo->cy - resizeBorderWidth, TRUE);
+		expect(ret);
 
 		return DefWindowProc(hWnd, WM_CREATE, wParam, lParam);
 	}
@@ -567,12 +569,14 @@ namespace Awincs
 		auto [width, height] = dimensions.normal;
 
 		// To fix Microsoft bug with WS_POPUP window when changing size
-		expect(MoveWindow(hWnd, newAnchorPoint.x, newAnchorPoint.y, width - resizeBorderWidth, height - resizeBorderWidth, TRUE));
+		auto ret = MoveWindow(hWnd, newAnchorPoint.x, newAnchorPoint.y, width - resizeBorderWidth, height - resizeBorderWidth, TRUE);
+		expect(ret);
 	}
 
 	void WinAPIWindow::redraw()
 	{
-		expect(RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_NOERASE | RDW_INTERNALPAINT));
+		auto ret = RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_NOERASE | RDW_INTERNALPAINT);
+		expect(ret);
 	}
 
 	void WinAPIWindow::changeWindowState(WPARAM wParam)

@@ -5,7 +5,8 @@ namespace Awincs
 {
 	InputComponent::ShouldParentHandleEvent InputComponent::handleEvent(const Event::Keyboard::InputEvent& e)
 	{
-		expect(Component::handleEvent(e));
+		auto shouldHandle = Component::handleEvent(e);
+		expect(shouldHandle);
 
 		if (e.character == L'\b')
 		{

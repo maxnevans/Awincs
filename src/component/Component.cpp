@@ -144,9 +144,9 @@ namespace Awincs
 	{
 		auto index = std::find(children.begin(), children.end(), child);
 
-		assert(index != children.end());
+		auto removed = children.erase(index);
 
-		children.erase(index);
+		expect(removed != children.end());
 	}
 	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Mouse::ButtonEvent& e)
 	{
