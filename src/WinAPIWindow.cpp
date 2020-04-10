@@ -43,6 +43,20 @@ namespace Awincs
 		dimensions({ dims + DEFAULT_RESIZE_BORDER_WIDTH,  DEFAULT_MAXIMUM_DIMENSIONS, DEFAULT_MINIMUM_DIMENSIONS }),
 		windowController(windowController)
 	{
+	}
+
+	WinAPIWindow::WinAPIWindow(WindowController& window)
+		:WinAPIWindow(window, DEFAULT_WINDOW_ANCHOR_POINT, DEFAULT_WINDOW_DIMENSIONS)
+	{
+	}
+
+	WinAPIWindow::~WinAPIWindow()
+	{
+		DestroyWindow(hWnd);
+	}
+
+	void WinAPIWindow::create()
+	{
 		assert(registerer.registered);
 
 		auto [x, y] = this->anchorPoint;
@@ -58,16 +72,6 @@ namespace Awincs
 
 		ShowWindow(hWnd, SW_HIDE);
 		UpdateWindow(hWnd);
-	}
-
-	WinAPIWindow::WinAPIWindow(WindowController& window)
-		:WinAPIWindow(window, DEFAULT_WINDOW_ANCHOR_POINT, DEFAULT_WINDOW_DIMENSIONS)
-	{
-	}
-
-	WinAPIWindow::~WinAPIWindow()
-	{
-		DestroyWindow(hWnd);
 	}
 
 	void WinAPIWindow::show()
@@ -138,7 +142,8 @@ namespace Awincs
 
 	void WinAPIWindow::draw(DrawCallback cb)
 	{
-		drawQueue.push_back(cb);
+		drawQueue.emplace_back(std::move(cb));
+
 		expect(InvalidateRect(hWnd, NULL, FALSE) == TRUE);
 	}
 
@@ -221,8 +226,8 @@ namespace Awincs
 		case WM_ERASEBKGND: return wmEraseBackground(wParam, lParam);
 		case WM_CLOSE: return wmClose(wParam, lParam);
 		case WM_PAINT: return wmPaint(wParam, lParam);
-		case WM_SIZING:
-		case WM_MOVING: return wmSizingMoving(wParam, lParam);
+		case WM_SIZING: return wmSizing(wParam, lParam);
+		case WM_MOVING: return wmMoving(wParam, lParam);
 		case WM_SIZE: return wmSize(wParam, lParam);
 		case WM_MOVE: return wmMove(wParam, lParam);
 		case WM_CHAR: return wmChar(wParam, lParam);
@@ -321,7 +326,7 @@ namespace Awincs
 		e.modificationKeys = modKeys;
 		e.pressedMouseButtons = pressedMouseKeys;
 
-		windowController.handleEvent(e);
+		static_cast<ComponentEvent::Handler&>(windowController).handleEvent(e);
 
 		return 0;
 	}
@@ -338,7 +343,7 @@ namespace Awincs
 		e.modificationKeys = modKeys;
 		e.pressedMouseButtons = mouseButtons;
 
-		windowController.handleEvent(e);
+		static_cast<ComponentEvent::Handler&>(windowController).handleEvent(e);
 
 		return 0;
 	}
@@ -353,7 +358,7 @@ namespace Awincs
 		ComponentEvent::Keyboard::InputEvent e = {};
 		e.character = wParam;
 
-		windowController.handleEvent(e);
+		static_cast<ComponentEvent::Handler&>(windowController).handleEvent(e);
 
 		return 0;
 	}
@@ -364,7 +369,7 @@ namespace Awincs
 		e.action = ComponentEvent::Keyboard::KeyEventAction::UP;
 		e.keyCode = wParam;
 
-		windowController.handleEvent(e);
+		static_cast<ComponentEvent::Handler&>(windowController).handleEvent(e);
 
 		return 0;
 	}
@@ -375,13 +380,15 @@ namespace Awincs
 		e.action = ComponentEvent::Keyboard::KeyEventAction::DOWN;
 		e.keyCode = wParam;
 
-		windowController.handleEvent(e);
+		static_cast<ComponentEvent::Handler&>(windowController).handleEvent(e);
 
 		return 0;
 	}
 
 	LRESULT WinAPIWindow::wmClose(WPARAM wParam, LPARAM lParam)
 	{
+		static_cast<ComponentEvent::Handler&>(windowController).handleEvent(ComponentEvent::Window::CloseEvent{});
+
 		PostQuitMessage(0);
 		return 0;
 	}
@@ -411,7 +418,7 @@ namespace Awincs
 		return 0;
 	}
 
-	LRESULT WinAPIWindow::wmSizingMoving(WPARAM wParam, LPARAM lParam)
+	LRESULT WinAPIWindow::wmSizing(WPARAM wParam, LPARAM lParam)
 	{
 		PRECT pRect = reinterpret_cast<PRECT>(lParam);
 
@@ -420,6 +427,23 @@ namespace Awincs
 
 		// To fix Microsoft bug with WS_POPUP window when changing size
 		cuDimensions.normal = dimensions.normal - resizeBorderWidth;
+
+		windowController.handleEvent(ComponentEvent::Window::ResizeEvent{});
+
+		return TRUE;
+	}
+
+	LRESULT WinAPIWindow::wmMoving(WPARAM wParam, LPARAM lParam)
+	{
+		PRECT pRect = reinterpret_cast<PRECT>(lParam);
+
+		anchorPoint = { pRect->left, pRect->top };
+		dimensions.normal = { pRect->right - pRect->left, pRect->bottom - pRect->top };
+
+		// To fix Microsoft bug with WS_POPUP window when changing size
+		cuDimensions.normal = dimensions.normal - resizeBorderWidth;
+
+		windowController.handleEvent(ComponentEvent::Window::MoveEvent{});
 
 		return TRUE;
 	}
@@ -431,12 +455,19 @@ namespace Awincs
 		// To fix Microsoft bug with WS_POPUP window when changing size
 		cuDimensions.normal = dimensions.normal - resizeBorderWidth;
 
+		auto prevWindowState = windowState;
+		changeWindowState(wParam);
+		handleWindowStateEvent(prevWindowState, windowState);
+
 		return 0;
 	}
 
 	LRESULT WinAPIWindow::wmMove(WPARAM wParam, LPARAM lParam)
 	{
 		anchorPoint = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+
+		windowController.handleEvent(ComponentEvent::Window::MoveEvent{});
+
 		return 0;
 	}
 
@@ -542,6 +573,31 @@ namespace Awincs
 	void WinAPIWindow::redraw()
 	{
 		expect(RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_NOERASE | RDW_INTERNALPAINT));
+	}
+
+	void WinAPIWindow::changeWindowState(WPARAM wParam)
+	{
+		switch (wParam)
+		{
+		case SIZE_MAXIMIZED: windowState = WindowState::MAXIMIZED; break;
+		case SIZE_MINIMIZED: windowState = WindowState::MINIMIZED; break;
+		case SIZE_RESTORED: windowState = WindowState::NORMAL; break;
+		case SIZE_MAXHIDE: break;
+		case SIZE_MAXSHOW: break;
+		default: expect(false);
+		}
+	}
+
+	void WinAPIWindow::handleWindowStateEvent(WindowState prev, WindowState current)
+	{
+		if ((prev == WindowState::MAXIMIZED || prev == WindowState::MINIMIZED) && current == WindowState::NORMAL)
+			static_cast<ComponentEvent::Handler&>(windowController).handleEvent(ComponentEvent::Window::RestoreEvent{});
+		else if (current == WindowState::NORMAL)
+			static_cast<ComponentEvent::Handler&>(windowController).handleEvent(ComponentEvent::Window::ResizeEvent{});
+		else if (current == WindowState::MINIMIZED)
+			static_cast<ComponentEvent::Handler&>(windowController).handleEvent(ComponentEvent::Window::MinimizeEvent{});
+		else if (current == WindowState::MAXIMIZED)
+			static_cast<ComponentEvent::Handler&>(windowController).handleEvent(ComponentEvent::Window::MaximizeEvent{});
 	}
 
 }

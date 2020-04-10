@@ -12,10 +12,16 @@ namespace Awincs
 			using ShouldParentHandleEvent = bool;
 
 		public:
-			virtual ShouldParentHandleEvent handleEvent(const Mouse::ButtonEvent&) { return true;  }
-			virtual ShouldParentHandleEvent handleEvent(const Mouse::WheelEvent&) { return true; }
-			virtual ShouldParentHandleEvent handleEvent(const Keyboard::KeyEvent&) { return true; }
-			virtual ShouldParentHandleEvent handleEvent(const Keyboard::InputEvent&) { return true; }
+			virtual ShouldParentHandleEvent handleEvent(const Mouse::ButtonEvent&) = 0;
+			virtual ShouldParentHandleEvent handleEvent(const Mouse::WheelEvent&) = 0;
+			virtual ShouldParentHandleEvent handleEvent(const Keyboard::KeyEvent&) = 0;
+			virtual ShouldParentHandleEvent handleEvent(const Keyboard::InputEvent&) = 0;
+			virtual ShouldParentHandleEvent handleEvent(const Window::ResizeEvent&) = 0;
+			virtual ShouldParentHandleEvent handleEvent(const Window::MoveEvent&) = 0;
+			virtual ShouldParentHandleEvent handleEvent(const Window::MaximizeEvent&) = 0;
+			virtual ShouldParentHandleEvent handleEvent(const Window::MinimizeEvent&) = 0;
+			virtual ShouldParentHandleEvent handleEvent(const Window::CloseEvent&) = 0;
+			virtual ShouldParentHandleEvent handleEvent(const Window::RestoreEvent&) = 0;
 		};
 	}
 }

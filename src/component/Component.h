@@ -9,25 +9,25 @@
 
 namespace Awincs
 {
+	namespace
+	{
+		namespace Event = ComponentEvent;
+	}
+
 	class Component
 		:
 		public std::enable_shared_from_this<Component>,
 		public ComponentEvent::Handler,
 		public WindowStateHandler
 	{
+		
 	public:
 		using Point = Geometry::IntPoint2D;
 		using Dimensions = Geometry::IntDimensions2D;
 
 	public:
-		using ComponentCallback = std::function<void(Component&)>;
-		using ShouldParentHandleEvent = ComponentEvent::Handler::ShouldParentHandleEvent;
-		using MouseEvent = ComponentEvent::Mouse::Event;
-		using KeyboardEvent = ComponentEvent::Keyboard::Event;
-		using MouseButtonEvent = ComponentEvent::Mouse::ButtonEvent;
-		using MouseWheelEvent = ComponentEvent::Mouse::WheelEvent;
-		using KeyEvent = ComponentEvent::Keyboard::KeyEvent;
-		using InputEvent = ComponentEvent::Keyboard::InputEvent;
+		using ComponentCallback			= std::function<void(Component&)>;
+		using ShouldParentHandleEvent	= Event::Handler::ShouldParentHandleEvent;
 
 	public:
 		Component() = default;
@@ -48,18 +48,24 @@ namespace Awincs
 		virtual void closeWindow() override;
 		virtual void minimizeWindow() override;
 		virtual void maximizeWindow() override;
-		virtual ShouldParentHandleEvent handleEvent(const MouseButtonEvent&);
-		virtual ShouldParentHandleEvent handleEvent(const MouseWheelEvent&);
-		virtual ShouldParentHandleEvent handleEvent(const KeyEvent&);
-		virtual ShouldParentHandleEvent handleEvent(const InputEvent&);
+		virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::ButtonEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::WheelEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Keyboard::KeyEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Keyboard::InputEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Window::ResizeEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Window::MoveEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Window::MaximizeEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Window::MinimizeEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Window::CloseEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Window::RestoreEvent&) override;
 
 	protected:
 		virtual void draw(HDC hdc) const;
 		std::weak_ptr<Component> getParent();
 
 	protected:
-		virtual void addChild(std::shared_ptr<Component> child);
-		virtual void removeChild(std::shared_ptr<Component> child);
+		virtual void addChild(const std::shared_ptr<Component>& child);
+		virtual void removeChild(const std::shared_ptr<Component>& child);
 
 	private:
 	template<typename GMouseEvent>

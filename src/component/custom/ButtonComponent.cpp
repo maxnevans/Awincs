@@ -68,7 +68,7 @@ namespace Awincs
 		return true;
 	}
 
-	ButtonComponent::ShouldParentHandleEvent ButtonComponent::handleEvent(const ComponentEvent::Keyboard::KeyEvent& e)
+	ButtonComponent::ShouldParentHandleEvent ButtonComponent::handleEvent(const Event::Keyboard::KeyEvent& e)
 	{
 		bool shouldHandle = Component::handleEvent(e);
 

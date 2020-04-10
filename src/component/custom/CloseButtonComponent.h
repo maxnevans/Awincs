@@ -11,6 +11,6 @@ namespace Awincs
 		public ButtonComponent
 	{
 	public:
-		virtual ShouldParentHandleEvent handleEvent(const MouseButtonEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::ButtonEvent&) override;
 	};
 }

@@ -12,7 +12,7 @@ namespace Awincs
 		public Component
 	{
 	public:
-		virtual ShouldParentHandleEvent handleEvent(const InputEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Keyboard::InputEvent&) override;
 
 	protected:
 		virtual void draw(HDC) const override;

@@ -3,7 +3,7 @@
 
 namespace Awincs
 {
-	InputComponent::ShouldParentHandleEvent InputComponent::handleEvent(const InputEvent& e)
+	InputComponent::ShouldParentHandleEvent InputComponent::handleEvent(const Event::Keyboard::InputEvent& e)
 	{
 		expect(Component::handleEvent(e));
 

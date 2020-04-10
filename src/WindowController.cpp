@@ -11,6 +11,7 @@ namespace Awincs
 		Component({0, 0}, dims),
 		window(std::make_unique<WinAPIWindow>(*this, anchorPoint, dims))
 	{
+		window->create();
 	}
 
 	void WindowController::setTitle(const std::wstring& title)
@@ -74,9 +75,7 @@ namespace Awincs
 	void WindowController::redraw()
 	{
 		DCONSOLE(L"WindowController::redraw()\n");
-		window->draw([&](HDC hdc) {
-			this->draw(hdc); 
-		});
+		p_redraw();
 	}
 	void WindowController::closeWindow()
 	{
@@ -89,6 +88,18 @@ namespace Awincs
 	void WindowController::maximizeWindow()
 	{
 		window->maximize();
+	}
+	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::MoveEvent& e)
+	{
+		expect(Component::handleEvent(e));
+		p_redraw();
+		return true;
+	}
+	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::ResizeEvent& e)
+	{
+		expect(Component::handleEvent(e));
+		p_redraw();
+		return true;
 	}
 	void WindowController::setMoveCapture(CaptureCallback cb)
 	{
@@ -134,6 +145,12 @@ namespace Awincs
 		DeleteObject(brush);
 
 		Component::draw(hdc);
+	}
+	void WindowController::p_redraw()
+	{
+		window->draw([&](HDC hdc) {
+			this->draw(hdc);
+		});
 	}
 }
 

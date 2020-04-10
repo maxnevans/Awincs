@@ -218,6 +218,7 @@
     <ClInclude Include="src\component\event\Handler.h" />
     <ClInclude Include="src\component\event\system\Keyboard.h" />
     <ClInclude Include="src\component\event\system\Mouse.h" />
+    <ClInclude Include="src\component\event\system\Window.h" />
     <ClInclude Include="src\Geometry.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\WinAPIWindow.h" />

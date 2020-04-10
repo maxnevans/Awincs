@@ -6,11 +6,11 @@
 
 namespace Awincs
 {
-	CloseButtonComponent::ShouldParentHandleEvent CloseButtonComponent::handleEvent(const MouseButtonEvent& e)
+	CloseButtonComponent::ShouldParentHandleEvent CloseButtonComponent::handleEvent(const Event::Mouse::ButtonEvent& e)
 	{
 		expect(ButtonComponent::handleEvent(e));
 
-		if (e.action == ComponentEvent::Mouse::ButtonAction::DOWN && e.buttonType == ComponentEvent::Mouse::ButtonType::LEFT)
+		if (e.action == Event::Mouse::ButtonAction::DOWN && e.buttonType == Event::Mouse::ButtonType::LEFT)
 		{
 			auto parent = getParent().lock();
 			expect(parent);

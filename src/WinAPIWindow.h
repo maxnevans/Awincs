@@ -24,6 +24,13 @@ namespace Awincs
 			Dimensions min;
 		};
 
+		enum class WindowState
+		{
+			MAXIMIZED,
+			MINIMIZED,
+			NORMAL
+		};
+
 		class WinAPIWindowRegisterer
 		{
 		public:
@@ -40,6 +47,7 @@ namespace Awincs
 		WinAPIWindow(const WinAPIWindow&) = delete;
 		WinAPIWindow& operator=(const WinAPIWindow&) = delete;
 
+		void create();
 		void show();
 		void hide();
 		void minimize();
@@ -84,7 +92,8 @@ namespace Awincs
 		LRESULT wmKeyDown(WPARAM wParam, LPARAM lParam);
 		LRESULT wmClose(WPARAM wParam, LPARAM lParam);
 		LRESULT wmPaint(WPARAM wParam, LPARAM lParam);
-		LRESULT wmSizingMoving(WPARAM wParam, LPARAM lParam);
+		LRESULT wmSizing(WPARAM wParam, LPARAM lParam);
+		LRESULT wmMoving(WPARAM wParam, LPARAM lParam);
 		LRESULT wmSize(WPARAM wParam, LPARAM lParam);
 		LRESULT wmMove(WPARAM wParam, LPARAM lParam);
 		LRESULT wmEraseBackground(WPARAM wParam, LPARAM lParam);
@@ -96,6 +105,8 @@ namespace Awincs
 		std::pair<std::set<ComponentEvent::Keyboard::ModificationKey>, std::set<ComponentEvent::Mouse::ButtonType>> parseMouseKeyState(WORD keyState);
 		void moveWindow(const Point& ap);
 		void redraw();
+		void changeWindowState(WPARAM wParam);
+		void handleWindowStateEvent(WindowState prev, WindowState current);
 
 	private:
 		static constexpr int DEFAULT_RESIZE_BORDER_WIDTH							= 5;
@@ -107,6 +118,7 @@ namespace Awincs
 		static constexpr Point DEFAULT_WINDOW_ANCHOR_POINT							= { 100, 100 };
 		static constexpr std::wstring_view WINDOW_CLASS_NAME						= L"WindowComponent";
 		static constexpr COLORREF DEFAULT_WINDOW_BACKGROUND_COLOR					= RGB(0x10, 0x20, 0x30);
+		static constexpr WindowState DEFAULT_WINDOW_STATE							= WindowState::NORMAL;
 		static WinAPIWindowRegisterer registerer;
 
 		HINSTANCE hInstance															= GetModuleHandle(NULL);;
@@ -123,7 +135,7 @@ namespace Awincs
 																						DEFAULT_MINIMUM_DIMENSIONS - DEFAULT_RESIZE_BORDER_WIDTH} ;
 
 		int resizeBorderWidth														= DEFAULT_RESIZE_BORDER_WIDTH;
-		
+		WindowState windowState														= DEFAULT_WINDOW_STATE;
 		WindowController& windowController;
 		std::vector<DrawCallback> drawQueue;
 	};

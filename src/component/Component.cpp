@@ -136,11 +136,11 @@ namespace Awincs
 		return parent;
 	}
 
-	void Component::addChild(std::shared_ptr<Component> child)
+	void Component::addChild(const std::shared_ptr<Component>& child)
 	{
 		children.push_back(child);
 	}
-	void Component::removeChild(std::shared_ptr<Component> child)
+	void Component::removeChild(const std::shared_ptr<Component>& child)
 	{
 		auto index = std::find(children.begin(), children.end(), child);
 
@@ -148,19 +148,43 @@ namespace Awincs
 
 		children.erase(index);
 	}
-	Component::ShouldParentHandleEvent Component::handleEvent(const MouseButtonEvent& e)
+	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Mouse::ButtonEvent& e)
 	{
 		return handleMouseEvent(e);
 	}
-	Component::ShouldParentHandleEvent Component::handleEvent(const MouseWheelEvent& e)
+	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Mouse::WheelEvent& e)
 	{
 		return handleMouseEvent(e);
 	}
-	Component::ShouldParentHandleEvent Component::handleEvent(const KeyEvent& e)
+	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Keyboard::KeyEvent& e)
 	{
 		return handleNonMouseEvent(e);
 	}
-	Component::ShouldParentHandleEvent Component::handleEvent(const InputEvent& e)
+	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Keyboard::InputEvent& e)
+	{
+		return handleNonMouseEvent(e);
+	}
+	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Window::ResizeEvent& e)
+	{
+		return handleNonMouseEvent(e);
+	}
+	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Window::MoveEvent& e)
+	{
+		return handleNonMouseEvent(e);
+	}
+	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Window::MaximizeEvent& e)
+	{
+		return handleNonMouseEvent(e);
+	}
+	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Window::MinimizeEvent& e)
+	{
+		return handleNonMouseEvent(e);
+	}
+	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Window::CloseEvent& e)
+	{
+		return handleNonMouseEvent(e);
+	}
+	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Window::RestoreEvent& e)
 	{
 		return handleNonMouseEvent(e);
 	}

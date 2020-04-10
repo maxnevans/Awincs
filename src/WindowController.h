@@ -43,8 +43,12 @@ namespace Awincs
 		virtual void minimizeWindow() override;
 		virtual void maximizeWindow() override;
 
+		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::MoveEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::ResizeEvent&) override;
+
 	protected:
 		virtual void draw(HDC) const override;
+		void p_redraw();
 
 	private:
 		static constexpr COLORREF DEFAULT_BACKGROUND_COLOR = RGB(10, 20, 30);
