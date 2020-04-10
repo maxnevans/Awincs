@@ -3,7 +3,8 @@
 #include "../pch.h"
 
 #include "../Geometry.h"
-#include "../ComponentEventHandler.h"
+#include "event/Handler.h"
+#include "event/Event.h"
 #include "../WindowStateHandler.h"
 
 namespace Awincs
@@ -11,7 +12,7 @@ namespace Awincs
 	class Component
 		:
 		public std::enable_shared_from_this<Component>,
-		public ComponentEvent::ComponentEventHandler,
+		public ComponentEvent::Handler,
 		public WindowStateHandler
 	{
 	public:
@@ -20,13 +21,13 @@ namespace Awincs
 
 	public:
 		using ComponentCallback = std::function<void(Component&)>;
-		using ShouldParentHandleEvent = ComponentEvent::ComponentEventHandler::ShouldParentHandleEvent;
-		using MouseEvent = ComponentEvent::MouseEvent;
-		using KeyboardEvent = ComponentEvent::KeyboardEvent;
-		using MouseButtonEvent = ComponentEvent::MouseButtonEvent;
-		using MouseWheelEvent = ComponentEvent::MouseWheelEvent;
-		using KeyEvent = ComponentEvent::KeyEvent;
-		using InputEvent = ComponentEvent::InputEvent;
+		using ShouldParentHandleEvent = ComponentEvent::Handler::ShouldParentHandleEvent;
+		using MouseEvent = ComponentEvent::Mouse::Event;
+		using KeyboardEvent = ComponentEvent::Keyboard::Event;
+		using MouseButtonEvent = ComponentEvent::Mouse::ButtonEvent;
+		using MouseWheelEvent = ComponentEvent::Mouse::WheelEvent;
+		using KeyEvent = ComponentEvent::Keyboard::KeyEvent;
+		using InputEvent = ComponentEvent::Keyboard::InputEvent;
 
 	public:
 		Component() = default;
@@ -78,7 +79,7 @@ namespace Awincs
 		return true;
 	}
 	template<typename GNonMouseEvent>
-	// requires std::is_convertable<GNonMouseEvent, ComponentEvent::Event>::value_type
+	// requires std::is_convertable<GNonMouseEvent, ComponentEvent::CoreEvent>::value_type
 	ShouldParentHandleEvent handleNonMouseEvent(const GNonMouseEvent& e)
 	{
 		bool shouldComponentHandleEvent = true;

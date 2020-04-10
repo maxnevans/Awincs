@@ -182,7 +182,7 @@ namespace Awincs
 		return dimensions.max;
 	}
 
-	LRESULT WinAPIWindow::setupWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+	LRESULT CALLBACK WinAPIWindow::setupWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		if (uMsg == WM_CREATE)
 			throw WindowException(L"Failed to setup proxyWindowProc! WM_NCCREATE has not been called!");
@@ -206,7 +206,7 @@ namespace Awincs
 		return window->windowProc(uMsg, wParam, lParam);
 	}
 
-	LRESULT WinAPIWindow::proxyWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+	LRESULT CALLBACK WinAPIWindow::proxyWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		WinAPIWindow* const wnd = reinterpret_cast<WinAPIWindow* const>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 
@@ -250,71 +250,71 @@ namespace Awincs
 	{
 		DCONSOLE(L"Left button up: (" << GET_X_LPARAM(lParam) << L',' << GET_Y_LPARAM(lParam) << L")\n");
 
-		return wmMouseButton(wParam, lParam, ComponentEvent::MouseButtonType::LEFT, ComponentEvent::MouseButtonAction::UP);
+		return wmMouseButton(wParam, lParam, ComponentEvent::Mouse::ButtonType::LEFT, ComponentEvent::Mouse::ButtonAction::UP);
 	}
 
 	LRESULT WinAPIWindow::wmLButtonDown(WPARAM wParam, LPARAM lParam)
 	{
 		DCONSOLE(L"Left button down: (" << GET_X_LPARAM(lParam) << L',' << GET_Y_LPARAM(lParam) << L")\n");
 
-		return wmMouseButton(wParam, lParam, ComponentEvent::MouseButtonType::LEFT, ComponentEvent::MouseButtonAction::DOWN);
+		return wmMouseButton(wParam, lParam, ComponentEvent::Mouse::ButtonType::LEFT, ComponentEvent::Mouse::ButtonAction::DOWN);
 	}
 
 	LRESULT WinAPIWindow::wmRButtonUp(WPARAM wParam, LPARAM lParam)
 	{
 		DCONSOLE(L"Right button up: (" << GET_X_LPARAM(lParam) << L',' << GET_Y_LPARAM(lParam) << L")\n");
 
-		return wmMouseButton(wParam, lParam, ComponentEvent::MouseButtonType::RIGHT, ComponentEvent::MouseButtonAction::UP);
+		return wmMouseButton(wParam, lParam, ComponentEvent::Mouse::ButtonType::RIGHT, ComponentEvent::Mouse::ButtonAction::UP);
 	}
 
 	LRESULT WinAPIWindow::wmRButtonDown(WPARAM wParam, LPARAM lParam)
 	{
 		DCONSOLE(L"Right button down: (" << GET_X_LPARAM(lParam) << L',' << GET_Y_LPARAM(lParam) << L")\n");
 
-		return wmMouseButton(wParam, lParam, ComponentEvent::MouseButtonType::RIGHT, ComponentEvent::MouseButtonAction::DOWN);
+		return wmMouseButton(wParam, lParam, ComponentEvent::Mouse::ButtonType::RIGHT, ComponentEvent::Mouse::ButtonAction::DOWN);
 	}
 
 	LRESULT WinAPIWindow::wmMButtonUp(WPARAM wParam, LPARAM lParam)
 	{
-		return wmMouseButton(wParam, lParam, ComponentEvent::MouseButtonType::MIDDLE, ComponentEvent::MouseButtonAction::UP);
+		return wmMouseButton(wParam, lParam, ComponentEvent::Mouse::ButtonType::MIDDLE, ComponentEvent::Mouse::ButtonAction::UP);
 	}
 
 	LRESULT WinAPIWindow::wmMButtonDown(WPARAM wParam, LPARAM lParam)
 	{
-		return wmMouseButton(wParam, lParam, ComponentEvent::MouseButtonType::MIDDLE, ComponentEvent::MouseButtonAction::DOWN);
+		return wmMouseButton(wParam, lParam, ComponentEvent::Mouse::ButtonType::MIDDLE, ComponentEvent::Mouse::ButtonAction::DOWN);
 	}
 
 	LRESULT WinAPIWindow::wmXButtonUp(WPARAM wParam, LPARAM lParam)
 	{
-		ComponentEvent::MouseButtonType mb;
+		ComponentEvent::Mouse::ButtonType mb;
 		auto xButton = GET_XBUTTON_WPARAM(wParam);
 
-		if (xButton & XBUTTON1) mb = ComponentEvent::MouseButtonType::XBUTTON;
-		if (xButton & XBUTTON2) mb = ComponentEvent::MouseButtonType::YBUTTON;
+		if (xButton & XBUTTON1) mb = ComponentEvent::Mouse::ButtonType::XBUTTON;
+		if (xButton & XBUTTON2) mb = ComponentEvent::Mouse::ButtonType::YBUTTON;
 
-		wmMouseButton(wParam, lParam, mb, ComponentEvent::MouseButtonAction::UP);
+		wmMouseButton(wParam, lParam, mb, ComponentEvent::Mouse::ButtonAction::UP);
 
 		return TRUE;
 	}
 
 	LRESULT WinAPIWindow::wmXButtonDown(WPARAM wParam, LPARAM lParam)
 	{
-		ComponentEvent::MouseButtonType mb;
+		ComponentEvent::Mouse::ButtonType mb;
 		auto xButton = GET_XBUTTON_WPARAM(wParam);
 
-		if (xButton & XBUTTON1) mb = ComponentEvent::MouseButtonType::XBUTTON;
-		if (xButton & XBUTTON2) mb = ComponentEvent::MouseButtonType::YBUTTON;
+		if (xButton & XBUTTON1) mb = ComponentEvent::Mouse::ButtonType::XBUTTON;
+		if (xButton & XBUTTON2) mb = ComponentEvent::Mouse::ButtonType::YBUTTON;
 
-		wmMouseButton(wParam, lParam, mb, ComponentEvent::MouseButtonAction::DOWN);
+		wmMouseButton(wParam, lParam, mb, ComponentEvent::Mouse::ButtonAction::DOWN);
 
 		return TRUE;
 	}
 
-	LRESULT WinAPIWindow::wmMouseButton(WPARAM wParam, LPARAM lParam, ComponentEvent::MouseButtonType mbt, ComponentEvent::MouseButtonAction mba)
+	LRESULT WinAPIWindow::wmMouseButton(WPARAM wParam, LPARAM lParam, ComponentEvent::Mouse::ButtonType mbt, ComponentEvent::Mouse::ButtonAction mba)
 	{
 		auto [modKeys, pressedMouseKeys] = parseMouseKeyState(GET_KEYSTATE_WPARAM(wParam));
 
-		ComponentEvent::MouseButtonEvent e = {};
+		ComponentEvent::Mouse::ButtonEvent e = {};
 		e.point = { GET_X_LPARAM(lParam) ,  GET_Y_LPARAM(lParam) };
 		e.buttonType = mbt;
 		e.action = mba;
@@ -331,9 +331,9 @@ namespace Awincs
 		auto wheelDelta = GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA;
 		auto [modKeys, mouseButtons] = parseMouseKeyState(GET_KEYSTATE_WPARAM(wParam));
 
-		ComponentEvent::MouseWheelEvent e = {};
+		ComponentEvent::Mouse::WheelEvent e = {};
 		e.point = { GET_X_LPARAM(lParam) ,  GET_Y_LPARAM(lParam) };
-		e.direction = wheelDelta > 0  ? ComponentEvent::ScrollDirection::UP: ComponentEvent::ScrollDirection::DOWN;
+		e.direction = wheelDelta > 0  ? ComponentEvent::Mouse::ScrollDirection::UP: ComponentEvent::Mouse::ScrollDirection::DOWN;
 		e.amountScrolled = std::abs(wheelDelta);
 		e.modificationKeys = modKeys;
 		e.pressedMouseButtons = mouseButtons;
@@ -350,7 +350,7 @@ namespace Awincs
 
 	LRESULT WinAPIWindow::wmChar(WPARAM wParam, LPARAM lParam)
 	{
-		ComponentEvent::InputEvent e = {};
+		ComponentEvent::Keyboard::InputEvent e = {};
 		e.character = wParam;
 
 		windowController.handleEvent(e);
@@ -360,10 +360,8 @@ namespace Awincs
 
 	LRESULT WinAPIWindow::wmKeyUp(WPARAM wParam, LPARAM lParam)
 	{
-		using namespace ComponentEvent;
-
-		KeyEvent e = {};
-		e.action = KeyEventAction::UP;
+		ComponentEvent::Keyboard::KeyEvent e = {};
+		e.action = ComponentEvent::Keyboard::KeyEventAction::UP;
 		e.keyCode = wParam;
 
 		windowController.handleEvent(e);
@@ -373,10 +371,8 @@ namespace Awincs
 
 	LRESULT WinAPIWindow::wmKeyDown(WPARAM wParam, LPARAM lParam)
 	{
-		using namespace ComponentEvent;
-
-		KeyEvent e = {};
-		e.action = KeyEventAction::DOWN;
+		ComponentEvent::Keyboard::KeyEvent e = {};
+		e.action = ComponentEvent::Keyboard::KeyEventAction::DOWN;
 		e.keyCode = wParam;
 
 		windowController.handleEvent(e);
@@ -518,19 +514,19 @@ namespace Awincs
 		return DefWindowProc(hWnd, WM_GETMINMAXINFO, wParam, lParam);
 	}
 
-	std::pair<std::set<ComponentEvent::ModificationKey>, std::set<ComponentEvent::MouseButtonType>> WinAPIWindow::parseMouseKeyState(WORD keyState)
+	std::pair<std::set<ComponentEvent::Keyboard::ModificationKey>, std::set<ComponentEvent::Mouse::ButtonType>> WinAPIWindow::parseMouseKeyState(WORD keyState)
 	{
-		std::set<ComponentEvent::ModificationKey> modificationKeys;
-		if (keyState & MK_CONTROL) modificationKeys.insert(ComponentEvent::ModificationKey::CTRL);
-		if (keyState & MK_SHIFT) modificationKeys.insert(ComponentEvent::ModificationKey::SHIFT);
+		std::set<ComponentEvent::Keyboard::ModificationKey> modificationKeys;
+		if (keyState & MK_CONTROL) modificationKeys.insert(ComponentEvent::Keyboard::ModificationKey::CTRL);
+		if (keyState & MK_SHIFT) modificationKeys.insert(ComponentEvent::Keyboard::ModificationKey::SHIFT);
 
 
-		std::set<ComponentEvent::MouseButtonType> pressedMouseButtons;
-		if (keyState & MK_LBUTTON) pressedMouseButtons.insert(ComponentEvent::MouseButtonType::LEFT);
-		if (keyState & MK_RBUTTON) pressedMouseButtons.insert(ComponentEvent::MouseButtonType::RIGHT);
-		if (keyState & MK_MBUTTON) pressedMouseButtons.insert(ComponentEvent::MouseButtonType::MIDDLE);
-		if (keyState & MK_XBUTTON1) pressedMouseButtons.insert(ComponentEvent::MouseButtonType::XBUTTON);
-		if (keyState & MK_XBUTTON2) pressedMouseButtons.insert(ComponentEvent::MouseButtonType::YBUTTON);
+		std::set<ComponentEvent::Mouse::ButtonType> pressedMouseButtons;
+		if (keyState & MK_LBUTTON) pressedMouseButtons.insert(ComponentEvent::Mouse::ButtonType::LEFT);
+		if (keyState & MK_RBUTTON) pressedMouseButtons.insert(ComponentEvent::Mouse::ButtonType::RIGHT);
+		if (keyState & MK_MBUTTON) pressedMouseButtons.insert(ComponentEvent::Mouse::ButtonType::MIDDLE);
+		if (keyState & MK_XBUTTON1) pressedMouseButtons.insert(ComponentEvent::Mouse::ButtonType::XBUTTON);
+		if (keyState & MK_XBUTTON2) pressedMouseButtons.insert(ComponentEvent::Mouse::ButtonType::YBUTTON);
 
 		return { modificationKeys, pressedMouseButtons };
 	}

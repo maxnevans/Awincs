@@ -1,8 +1,8 @@
-#include "../pch.h"
+#include "../../pch.h"
 #include "ButtonComponent.h"
 
-#include "../../../DebugConsole/include/DebugConsole.h"
-#include "../Geometry.h"
+#include "../../../../DebugConsole/include/DebugConsole.h"
+#include "../../Geometry.h"
 
 namespace Awincs
 {
@@ -57,7 +57,7 @@ namespace Awincs
 		return Geometry::IntRectangle::checkAffiliationIgnoreChildren(getAnchorPoint(), getDimensions(), pt);
 	}
 
-	bool ButtonComponent::handleEvent(const ComponentEvent::MouseButtonEvent& e)
+	bool ButtonComponent::handleEvent(const ComponentEvent::Mouse::ButtonEvent& e)
 	{
 		bool shouldHandle = Component::handleEvent(e);
 
@@ -68,7 +68,7 @@ namespace Awincs
 		return true;
 	}
 
-	ButtonComponent::ShouldParentHandleEvent ButtonComponent::handleEvent(const ComponentEvent::KeyEvent& e)
+	ButtonComponent::ShouldParentHandleEvent ButtonComponent::handleEvent(const ComponentEvent::Keyboard::KeyEvent& e)
 	{
 		bool shouldHandle = Component::handleEvent(e);
 

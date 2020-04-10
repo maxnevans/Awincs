@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "WindowController.h"
 
-#include "components/ComponentEvent.h"
 #include "WindowControllerException.h"
 #include "../../DebugConsole/include/DebugConsole.h"
 

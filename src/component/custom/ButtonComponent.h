@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../pch.h"
+#include "../../pch.h"
 
-#include "Component.h"
+#include "../Component.h"
 
 namespace Awincs
 {
@@ -14,8 +14,8 @@ namespace Awincs
 		void setTitle(const std::wstring& title);
 		std::wstring getTitle() const;
 		virtual ShouldParentHandleEvent checkAffiliationIgnoreChildren(const Point& pt) const override;
-		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::MouseButtonEvent& e) override;
-		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::KeyEvent& e) override;
+		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Mouse::ButtonEvent& e) override;
+		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Keyboard::KeyEvent& e) override;
 
 	protected:
 		virtual void draw(HDC hdc) const override;

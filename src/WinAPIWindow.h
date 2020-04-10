@@ -4,7 +4,7 @@
 
 #include "Geometry.h"
 #include "WindowController.h"
-#include "components/ComponentEvent.h"
+#include "component/event/Event.h"
 
 namespace Awincs
 {
@@ -76,7 +76,7 @@ namespace Awincs
 		LRESULT wmMButtonDown(WPARAM wParam, LPARAM lParam);
 		LRESULT wmXButtonUp(WPARAM wParam, LPARAM lParam);
 		LRESULT wmXButtonDown(WPARAM wParam, LPARAM lParam);
-		LRESULT wmMouseButton(WPARAM wParam, LPARAM lParam, ComponentEvent::MouseButtonType mbt, ComponentEvent::MouseButtonAction mba);
+		LRESULT wmMouseButton(WPARAM wParam, LPARAM lParam, ComponentEvent::Mouse::ButtonType mbt, ComponentEvent::Mouse::ButtonAction mba);
 		LRESULT wmMouseWheel(WPARAM wParam, LPARAM lParam);
 		LRESULT wmUnichar(WPARAM wParam, LPARAM lParam);
 		LRESULT wmChar(WPARAM wParam, LPARAM lParam);
@@ -93,7 +93,7 @@ namespace Awincs
 		LRESULT wmCreate(WPARAM wParam, LPARAM lParam);
 		LRESULT wmGetMinMaxInfo(WPARAM wParam, LPARAM lParam);
 
-		std::pair<std::set<ComponentEvent::ModificationKey>, std::set<ComponentEvent::MouseButtonType>> parseMouseKeyState(WORD keyState);
+		std::pair<std::set<ComponentEvent::Keyboard::ModificationKey>, std::set<ComponentEvent::Mouse::ButtonType>> parseMouseKeyState(WORD keyState);
 		void moveWindow(const Point& ap);
 		void redraw();
 

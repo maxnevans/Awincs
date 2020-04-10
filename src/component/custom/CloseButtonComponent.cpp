@@ -1,8 +1,8 @@
-#include "../pch.h"
+#include "../../pch.h"
 
 #include "CloseButtonComponent.h"
 
-#include "../WindowStateHandler.h"
+#include "../../WindowStateHandler.h"
 
 namespace Awincs
 {
@@ -10,7 +10,7 @@ namespace Awincs
 	{
 		expect(ButtonComponent::handleEvent(e));
 
-		if (e.action == ComponentEvent::MouseButtonAction::DOWN && e.buttonType == ComponentEvent::MouseButtonType::LEFT)
+		if (e.action == ComponentEvent::Mouse::ButtonAction::DOWN && e.buttonType == ComponentEvent::Mouse::ButtonType::LEFT)
 		{
 			auto parent = getParent().lock();
 			expect(parent);

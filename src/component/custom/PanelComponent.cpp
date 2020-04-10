@@ -1,7 +1,7 @@
-#include "../pch.h"
+#include "../../pch.h"
 #include "PanelComponent.h"
 
-#include "../Geometry.h"
+#include "../../Geometry.h"
 
 bool Awincs::PanelComponent::checkAffiliationIgnoreChildren(const Point& pt) const
 {

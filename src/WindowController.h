@@ -3,8 +3,7 @@
 #include "pch.h"
 
 #include "WinAPIWindow.h"
-#include "components/Component.h"
-#include "components/ComponentEvent.h"
+#include "component/Component.h"
 
 namespace Awincs
 {
