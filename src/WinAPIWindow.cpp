@@ -5,6 +5,17 @@
 #include "base/DebugUntils.h"
 #include "WindowException.h"
 
+#include <dwmapi.h>
+#include <versionhelpers.h>
+#include <uxtheme.h>
+
+#ifndef WM_NCUAHDRAWCAPTION
+#define WM_NCUAHDRAWCAPTION (0x00AE)
+#endif
+#ifndef WM_NCUAHDRAWFRAME
+#define WM_NCUAHDRAWFRAME (0x00AF)
+#endif
+
 
 namespace Awincs
 {
@@ -26,7 +37,7 @@ namespace Awincs
 		wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 		wndClass.hbrBackground = CreateSolidBrush(DEFAULT_WINDOW_BACKGROUND_COLOR);
 
-		if (RegisterClassExW(&wndClass) == FALSE)
+		if (RegisterClassEx(&wndClass) == FALSE)
 		{
 			auto errorCode = std::to_wstring(GetLastError());
 
@@ -36,11 +47,15 @@ namespace Awincs
 		registered = true;
 	}
 
+	WinAPIWindow::WinAPIWindowRegisterer::~WinAPIWindowRegisterer()
+	{
+		UnregisterClass(WINDOW_CLASS_NAME.data(), GetModuleHandle(NULL));
+	}
+
 	WinAPIWindow::WinAPIWindow(WindowController& windowController, const Point& anchorPoint, const Dimensions& dims)
 		:
 		anchorPoint(anchorPoint),
-		cuDimensions({ dims, DEFAULT_MAXIMUM_DIMENSIONS - DEFAULT_RESIZE_BORDER_WIDTH, DEFAULT_MINIMUM_DIMENSIONS - DEFAULT_RESIZE_BORDER_WIDTH }),
-		dimensions({ dims + DEFAULT_RESIZE_BORDER_WIDTH,  DEFAULT_MAXIMUM_DIMENSIONS, DEFAULT_MINIMUM_DIMENSIONS }),
+		dimensions({ dims, DEFAULT_MAXIMUM_DIMENSIONS, DEFAULT_MINIMUM_DIMENSIONS }),
 		windowController(windowController)
 	{
 	}
@@ -55,6 +70,93 @@ namespace Awincs
 		DestroyWindow(hWnd);
 	}
 
+	void WinAPIWindow::updateRegion()
+	{
+		/* Optimization puprose only: this is not required (we can just GetWindowInfo()
+		   to retrieve again previous region. This field is static right here to do not mess with it
+		   outside this function. */
+		static RECT rgn = {};
+		RECT oldRgn = rgn;
+
+		/* Calculating new region */
+		if (IsMaximized(hWnd)) {
+			WINDOWINFO wi = {};
+			wi.cbSize = sizeof(wi);
+			GetWindowInfo(hWnd, &wi);
+
+			/* For maximized windows, a region is needed to cut off the non-client
+			   borders that hang over the edge of the screen */
+			rgn = {
+				wi.rcClient.left - wi.rcWindow.left, //left
+				wi.rcClient.top - wi.rcWindow.top, // top
+				wi.rcClient.right - wi.rcWindow.left, // right
+				wi.rcClient.bottom - wi.rcWindow.top //bottom
+			};
+		}
+		else if (!compositionEnabled) {
+			/* For ordinary themed windows when composition is disabled, a region
+			   is needed to remove the rounded top corners. Make it as large as
+			   possible to avoid having to change it when the window is resized. */
+			rgn = {
+				0, 0, // top left
+				32767, 32767 // right bottom
+			};
+		}
+		else {
+			/* Don't mess with the region when composition is enabled and the
+			   window is not maximized, otherwise it will lose its shadow */
+			rgn = {};
+		}
+
+		/* Avoid unnecessarily updating the region to avoid unnecessary redraws */
+		if (EqualRect(&rgn, &oldRgn))
+			return;
+
+		/* Treat empty regions as NULL regions */
+		RECT r = { 0 };
+		if (EqualRect(&rgn, &r))
+			SetWindowRgn(hWnd, NULL, TRUE);
+		else
+			SetWindowRgn(hWnd, CreateRectRgnIndirect(&rgn), TRUE);
+	}
+
+	bool WinAPIWindow::hasAutohideAppbar(UINT edge, const RECT& mon)
+	{
+
+		if (IsWindows8Point1OrGreater()) {
+			APPBARDATA aB = { 0 };
+			aB.cbSize = sizeof(APPBARDATA);
+			aB.uEdge = edge;
+			aB.rc = mon;
+
+			return SHAppBarMessage(ABM_GETAUTOHIDEBAREX, &aB);
+		}
+
+		/* Before Windows 8.1, it was not possible to specify a monitor when
+			checking for hidden appbars, so check only on the primary monitor */
+		if (mon.left != 0 || mon.top != 0)
+			return false;
+
+		APPBARDATA aB = {};
+		aB.cbSize = sizeof(aB);
+		aB.uEdge = edge;
+		return SHAppBarMessage(ABM_GETAUTOHIDEBAR, &aB);
+	}
+
+	void WinAPIWindow::setupDWM()
+	{
+		DwmIsCompositionEnabled(&reinterpret_cast<BOOL&>(compositionEnabled));
+
+		if (compositionEnabled) {
+			/* The window needs a frame to show a shadow, so give it the smallest
+			   amount of frame possible */
+			MARGINS m = { 0,0,1,0 };
+			DWORD attr = DWMNCRP_ENABLED;
+			DwmExtendFrameIntoClientArea(hWnd, &m);
+			DwmSetWindowAttribute(hWnd, DWMWA_NCRENDERING_POLICY, &attr, sizeof(DWORD));
+		}
+	}
+
 	void WinAPIWindow::create()
 	{
 		expect(registerer.registered);
@@ -62,18 +164,23 @@ namespace Awincs
 		auto [x, y] = this->anchorPoint;
 		auto [width, height] = this->dimensions.normal;
 
-		CreateWindow(WINDOW_CLASS_NAME.data(), windowTitle.c_str(), WS_POPUP,
+		CreateWindowEx(WS_EX_APPWINDOW | WS_EX_LAYERED, WINDOW_CLASS_NAME.data(), 
+			windowTitle.c_str(), WS_OVERLAPPEDWINDOW | WS_SIZEBOX,
 			x, y, width, height, NULL, NULL, hInstance, this);
-
-		//auto ret = UpdateLayeredWindow(hWnd, NULL, NULL, NULL, NULL, NULL, DEFAULT_WINDOW_BACKGROUND_COLOR, NULL, ULW_OPAQUE);
-		//expect(ret != FALSE); 
 
 		if (auto errorCode = GetLastError(); errorCode != ERROR_SUCCESS)
 		{
 			throw WindowException(L"Failed to create window! Error code: " + std::to_wstring(errorCode));
 		}
 
-		ShowWindow(hWnd, SW_HIDE);
+
+		SetLayeredWindowAttributes(hWnd, DEFAUL_WINDOW_CHROMA_COLOR, 0, LWA_COLORKEY);
+
+		setupDWM();
+
+		updateRegion();
+
+		ShowWindow(hWnd, SW_SHOW);
 		UpdateWindow(hWnd);
 	}
 
@@ -118,11 +225,10 @@ namespace Awincs
 		return windowTitle;
 	}
 
-	void WinAPIWindow::setAnchorPoint(Point point)
+	void WinAPIWindow::setAnchorPoint(const Point& point)
 	{
+		p_smartMove(anchorPoint, point);
 		anchorPoint = point;
-		auto ret = SetWindowPos(hWnd, NULL, point.x, point.y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-		expect(ret == TRUE);
 	}
 
 	const WinAPIWindow::Point& WinAPIWindow::getAnchorPoint() const
@@ -130,18 +236,15 @@ namespace Awincs
 		return anchorPoint;
 	}
 
-	void WinAPIWindow::setDimensions(Dimensions dims)
+	void WinAPIWindow::setDimensions(const Dimensions& dims)
 	{
-		// To fix Microsoft bug with WS_POPUP window when changing size
-		dimensions.normal = dims + resizeBorderWidth;
-		cuDimensions.normal = dims;
-		auto ret = SetWindowPos(hWnd, NULL, 0, 0, dims.width, dims.height, SWP_NOMOVE | SWP_NOZORDER);
-		expect(ret == TRUE);
+		p_smartResize(dimensions.normal, dims);
+		dimensions.normal = dims;
 	}
 
 	const WinAPIWindow::Dimensions& WinAPIWindow::getDimensions() const
 	{
-		return cuDimensions.normal;
+		return dimensions.normal;
 	}
 
 	void WinAPIWindow::draw(DrawCallback cb)
@@ -154,31 +257,23 @@ namespace Awincs
 	void WinAPIWindow::setResizeBorderWidth(int width)
 	{
 		expect(width >= 0);
-
-		// To fix Microsoft bug with WS_POPUP window when changing size
-		dimensions.normal = cuDimensions.normal + width;
-
 		resizeBorderWidth = width;
 	}
 
 	void WinAPIWindow::setMinDimensions(const Dimensions& dim)
 	{
-		// To fix Microsoft bug with WS_POPUP window when changing size
-		dimensions.min = dim + resizeBorderWidth;
-		cuDimensions.min = dim;
+		dimensions.min = dim;
 
 		// Apply dimensions
-		moveWindow(anchorPoint);
+		p_update();
 	}
 
 	void WinAPIWindow::setMaxDimensions(const Dimensions& dim)
 	{
-		// To fix Microsoft bug with WS_POPUP window when changing size
-		dimensions.max = dim + resizeBorderWidth;
-		cuDimensions.max = dim;
+		dimensions.max = dim;
 
 		// Apply dimensions
-		moveWindow(anchorPoint);
+		p_update();
 	}
 
 	const WinAPIWindow::Dimensions& WinAPIWindow::getMinDimensions()
@@ -250,9 +345,19 @@ namespace Awincs
 		case WM_NCHITTEST: return wmNCHitTest(wParam, lParam);
 		case WM_NCCALCSIZE: return wmNCCalcSize(wParam, lParam);
 		case WM_GETMINMAXINFO: return wmGetMinMaxInfo(wParam, lParam);
+		case WM_SETICON: 
+		case WM_SETTEXT: return wmSetTextAndSetIcon(uMsg, wParam, lParam);
+		case WM_THEMECHANGED: return wmThemeChanged(wParam, lParam);
+		case WM_WINDOWPOSCHANGED: return wmWindowPosChanged(wParam, lParam);
+		case WM_WINDOWPOSCHANGING: return wmWindowPosChanging(wParam, lParam);
+		case WM_NCUAHDRAWCAPTION:
+		case WM_NCUAHDRAWFRAME: return wmNCUAHDrawFrameAndCaption(wParam, lParam);
+		case WM_NCPAINT: return wmNCPaint(wParam, lParam);
+		case WM_NCACTIVATE: return wmNCActivate(wParam, lParam);
+		case WM_DWMCOMPOSITIONCHANGED: return wmDWMCompositionChanged(wParam, lParam);
 		}
 
-		return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+		return DefWindowProc(hWnd, uMsg, wParam, lParam);
 	}
 
 	LRESULT WinAPIWindow::wmLButtonUp(WPARAM wParam, LPARAM lParam)
@@ -295,11 +400,12 @@ namespace Awincs
 
 	LRESULT WinAPIWindow::wmXButtonUp(WPARAM wParam, LPARAM lParam)
 	{
-		ComponentEvent::Mouse::ButtonType mb;
+		ComponentEvent::Mouse::ButtonType mb = ComponentEvent::Mouse::ButtonType::UNKNOWN;
 		auto xButton = GET_XBUTTON_WPARAM(wParam);
 
 		if (xButton & XBUTTON1) mb = ComponentEvent::Mouse::ButtonType::XBUTTON;
 		if (xButton & XBUTTON2) mb = ComponentEvent::Mouse::ButtonType::YBUTTON;
+		expect(mb != ComponentEvent::Mouse::ButtonType::UNKNOWN);
 
 		wmMouseButton(wParam, lParam, mb, ComponentEvent::Mouse::ButtonAction::UP);
 
@@ -308,11 +414,12 @@ namespace Awincs
 
 	LRESULT WinAPIWindow::wmXButtonDown(WPARAM wParam, LPARAM lParam)
 	{
-		ComponentEvent::Mouse::ButtonType mb;
+		ComponentEvent::Mouse::ButtonType mb = ComponentEvent::Mouse::ButtonType::UNKNOWN;
 		auto xButton = GET_XBUTTON_WPARAM(wParam);
 
 		if (xButton & XBUTTON1) mb = ComponentEvent::Mouse::ButtonType::XBUTTON;
 		if (xButton & XBUTTON2) mb = ComponentEvent::Mouse::ButtonType::YBUTTON;
+		expect(mb != ComponentEvent::Mouse::ButtonType::UNKNOWN);
 
 		wmMouseButton(wParam, lParam, mb, ComponentEvent::Mouse::ButtonAction::DOWN);
 
@@ -424,54 +531,41 @@ namespace Awincs
 
 	LRESULT WinAPIWindow::wmSizing(WPARAM wParam, LPARAM lParam)
 	{
-		PRECT pRect = reinterpret_cast<PRECT>(lParam);
-
-		anchorPoint = { pRect->left, pRect->top };
-		
-		// To fix Microsoft bug with WS_POPUP window when changing size
-		cuDimensions.normal = { pRect->right - pRect->left, pRect->bottom - pRect->top };
-		dimensions.normal = cuDimensions.normal + resizeBorderWidth;
-
-		windowController.handleEvent(ComponentEvent::Window::ResizeEvent{});
-
-		return TRUE;
+		/*
+			This message COULD be handled here. But you should NOT change WinAPIWindow::dimensions or WinAPIWindow::anchorPoint here.
+			Note that WinAPIWindow::dimensions and WinAPIWindow::anchorPoint here is not updated yet.
+			It is better to handle anything that is related to position, dimensions or window state inside
+			WinAPIWindow::wmWindowPosChanged procedure;
+		*/
+		return DefWindowProc(hWnd, WM_SIZING, wParam, lParam);
 	}
 
 	LRESULT WinAPIWindow::wmMoving(WPARAM wParam, LPARAM lParam)
 	{
-		PRECT pRect = reinterpret_cast<PRECT>(lParam);
-
-		anchorPoint = { pRect->left, pRect->top };
-
-		// To fix Microsoft bug with WS_POPUP window when changing size
-		cuDimensions.normal = { pRect->right - pRect->left, pRect->bottom - pRect->top };
-		dimensions.normal = cuDimensions.normal + resizeBorderWidth;
-
-		windowController.handleEvent(ComponentEvent::Window::MoveEvent{});
-
-		return TRUE;
+		/*
+			This message COULD be handled here. But you should NOT change WinAPIWindow::dimensions or WinAPIWindow::anchorPoint here.
+			Note that WinAPIWindow::dimensions and WinAPIWindow::anchorPoint here is not updated yet.
+			It is better to handle anything that is related to position, dimensions or window state inside
+			WinAPIWindow::wmWindowPosChanged procedure;
+		*/
+		return DefWindowProc(hWnd, WM_MOVING, wParam, lParam);
 	}
 
 	LRESULT WinAPIWindow::wmSize(WPARAM wParam, LPARAM lParam)
 	{
-		dimensions.normal = { LOWORD(lParam), HIWORD(lParam) };
-
-		// To fix Microsoft bug with WS_POPUP window when changing size
-		cuDimensions.normal = dimensions.normal - resizeBorderWidth;
-
-		auto prevWindowState = windowState;
-		changeWindowState(wParam);
-		handleWindowStateEvent(prevWindowState, windowState);
-
-		return 0;
+		/*
+			This message will not be called due to WM_WINDOWPOSCHANGED is not calling DefWindowProc.
+			Handle this inside wmWindowPosChanged.
+		*/
+		return DefWindowProc(hWnd, WM_SIZE, wParam, lParam);
 	}
 
 	LRESULT WinAPIWindow::wmMove(WPARAM wParam, LPARAM lParam)
 	{
-		anchorPoint = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-
-		windowController.handleEvent(ComponentEvent::Window::MoveEvent{});
-
+		/*
+			This message will not be called due to WM_WINDOWPOSCHANGED is not calling DefWindowProc.
+			Handle this inside wmWindowPosChanged.
+		*/
 		return 0;
 	}
 
@@ -486,7 +580,7 @@ namespace Awincs
 
 		if (resizeBorderWidth)
 		{
-			auto [width, height] = dimensions.normal - resizeBorderWidth;
+			auto [width, height] = dimensions.normal;
 			auto [ax, ay] = anchorPoint;
 
 			int x = p.x - ax;
@@ -516,25 +610,61 @@ namespace Awincs
 	
 	LRESULT WinAPIWindow::wmNCCalcSize(WPARAM wParam, LPARAM lParam)
 	{
-		// To fix Microsoft bug with WS_POPUP window when changing size
-		if (wParam && resizeBorderWidth)
-		{
-			NCCALCSIZE_PARAMS* params = reinterpret_cast<NCCALCSIZE_PARAMS*>(lParam);
-			params->rgrc[0].bottom += resizeBorderWidth;
-			params->rgrc[0].right += resizeBorderWidth;
-			return 0;
+		/* DefWindowProc must be called in both the maximized and non-maximized
+		   cases, otherwise tile/cascade windows won't work */
+		RECT* rect = reinterpret_cast<RECT*>(lParam);
+		RECT nonClient = *reinterpret_cast<RECT*>(lParam);
+		DefWindowProc(hWnd, WM_NCCALCSIZE, wParam, lParam);
+		RECT client = *reinterpret_cast<RECT*>(lParam);
+
+		if (IsMaximized(hWnd)) {
+			WINDOWINFO wi = { sizeof wi }; // cbSize
+			GetWindowInfo(hWnd, &wi);
+
+			/* Maximized windows always have a non-client border that hangs over
+			   the edge of the screen, so the size proposed by WM_NCCALCSIZE is
+			   fine. Just adjust the top border to remove the window title. */
+			*rect = RECT{
+				client.left, // left
+				nonClient.top + static_cast<LONG>(wi.cyWindowBorders), // top
+				client.right, // right
+				client.bottom, // bottom
+			};
+
+			HMONITOR mon = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
+			MONITORINFO mi = { sizeof mi }; // cbSize
+			GetMonitorInfo(mon, &mi);
+
+			/* If the client rectangle is the same as the monitor's rectangle,
+			   the shell assumes that the window has gone fullscreen, so it removes
+			   the topmost attribute from any auto-hide appbars, making them
+			   inaccessible. To avoid this, reduce the size of the client area by
+			   one pixel on a certain edge. The edge is chosen based on which side
+			   of the monitor is likely to contain an auto-hide appbar, so the
+			   missing client area is covered by it. */
+			if (EqualRect(rect, &mi.rcMonitor)) {
+				if (hasAutohideAppbar(ABE_BOTTOM, mi.rcMonitor))
+					rect->bottom--;
+				else if (hasAutohideAppbar(ABE_LEFT, mi.rcMonitor))
+					rect->left++;
+				else if (hasAutohideAppbar(ABE_TOP, mi.rcMonitor))
+					rect->top++;
+				else if (hasAutohideAppbar(ABE_RIGHT, mi.rcMonitor))
+					rect->right--;
+			}
 		}
-		return DefWindowProc(hWnd, WM_NCCALCSIZE, wParam, lParam);
+		else {
+			/* For the non-maximized case, set the output RECT to what it was
+			   before WM_NCCALCSIZE modified it. This will make the client size the
+			   same as the non-client size. */
+			*rect = nonClient;
+		}
+
+		return 0;
 	}
 
 	LRESULT WinAPIWindow::wmCreate(WPARAM wParam, LPARAM lParam)
 	{
-		// To fix Microsoft bug with WS_POPUP window when changing size
-
-		CREATESTRUCT* windowInfo = reinterpret_cast<CREATESTRUCT*>(lParam);
-		auto ret = MoveWindow(hWnd, windowInfo->x, windowInfo->y, windowInfo->cx - resizeBorderWidth, windowInfo->cy - resizeBorderWidth, TRUE);
-		expect(ret);
-
 		return DefWindowProc(hWnd, WM_CREATE, wParam, lParam);
 	}
 
@@ -542,12 +672,136 @@ namespace Awincs
 	{
 		MINMAXINFO* minMax = reinterpret_cast<MINMAXINFO*>(lParam);
 
-		if (dimensions.min.width != ZERO_DIMENSIONS.width) minMax->ptMinTrackSize.x = dimensions.min.width;
-		if (dimensions.min.height != ZERO_DIMENSIONS.height) minMax->ptMinTrackSize.y = dimensions.min.height;
-		if (dimensions.max.width != ZERO_DIMENSIONS.width) minMax->ptMaxTrackSize.x = dimensions.max.width;
-		if (dimensions.max.height != ZERO_DIMENSIONS.height) minMax->ptMaxTrackSize.y = dimensions.max.height;
+		if (dimensions.min.width) minMax->ptMinTrackSize.x = dimensions.min.width;
+		if (dimensions.min.height) minMax->ptMinTrackSize.y = dimensions.min.height;
+		if (dimensions.max.width) minMax->ptMaxTrackSize.x = dimensions.max.width;
+		if (dimensions.max.height) minMax->ptMaxTrackSize.y = dimensions.max.height;
 
 		return DefWindowProc(hWnd, WM_GETMINMAXINFO, wParam, lParam);
+	}
+
+	LRESULT WinAPIWindow::wmSetTextAndSetIcon(UINT uMsg, WPARAM wParam, LPARAM lParam)
+	{
+		/* Disable painting while these messages are handled to prevent them
+		   from drawing a window caption over the client area, but only when
+		   composition and theming are disabled. These messages don't paint
+		   when composition is enabled and blocking WM_NCUAHDRAWCAPTION should
+		   be enough to prevent painting when theming is enabled. */
+		if (compositionEnabled && themeEnabled)
+		{
+			LONG_PTR old_style = GetWindowLongPtr(hWnd, GWL_STYLE);
+
+			/* Prevent Windows from drawing the default title bar by temporarily
+			   toggling the WS_VISIBLE style. This is recommended in:
+			   https://blogs.msdn.microsoft.com/wpfsdk/2008/09/08/custom-window-chrome-in-wpf/ */
+			SetWindowLongPtr(hWnd, GWL_STYLE, old_style & ~WS_VISIBLE);
+			LRESULT result = DefWindowProc(hWnd, uMsg, wParam, lParam);
+			SetWindowLongPtr(hWnd, GWL_STYLE, old_style);
+
+			return result;
+		}
+			return DefWindowProc(hWnd, uMsg, wParam, lParam);
+	}
+
+	LRESULT WinAPIWindow::wmDWMCompositionChanged(WPARAM wParam, LPARAM lParam)
+	{
+		setupDWM();
+		updateRegion();
+		return 0;
+	}
+
+	LRESULT WinAPIWindow::wmNCActivate(WPARAM wParam, LPARAM lParam)
+	{
+		/* DefWindowProc won't repaint the window border if lParam (normally a
+		   HRGN) is -1. This is recommended in:
+		   https://blogs.msdn.microsoft.com/wpfsdk/2008/09/08/custom-window-chrome-in-wpf/ */
+		return DefWindowProc(hWnd, WM_NCACTIVATE, wParam, -1);
+	}
+
+	LRESULT WinAPIWindow::wmNCPaint(WPARAM wParam, LPARAM lParam)
+	{
+		/* Only block WM_NCPAINT when composition is disabled. If it's blocked
+		   when composition is enabled, the window shadow won't be drawn. */
+		if (!compositionEnabled)
+			return 0;
+
+		return DefWindowProc(hWnd, WM_NCPAINT, wParam, lParam);
+	}
+
+	LRESULT WinAPIWindow::wmNCUAHDrawFrameAndCaption(WPARAM wParam, LPARAM lParam)
+	{
+		/* These undocumented messages are sent to draw themed window borders.
+		   Block them to prevent drawing borders over the client area. */
+		return 0;
+	}
+
+	LRESULT WinAPIWindow::wmThemeChanged(WPARAM wParam, LPARAM lParam)
+	{
+		themeEnabled = IsThemeActive();
+		return DefWindowProc(hWnd, WM_THEMECHANGED, wParam, lParam);
+	}
+
+	LRESULT WinAPIWindow::wmWindowPosChanged(WPARAM wParam, LPARAM lParam)
+	{
+		/* WINDOWPOS contians entire window position and dimensions.
+		   But we want a client because we process only client region. */
+		RECT client = {};
+		GetClientRect(hWnd, &client);
+
+		/* Calculating new anchorPoint and dimensions */
+		Dimensions newDimensions{ client.right , client.bottom};
+		bool dimenionsChanged = dimensions.normal != newDimensions;
+
+		WINDOWPOS* pos = reinterpret_cast<WINDOWPOS*>(lParam);
+
+		Point newAnchorPoint = { pos->x, pos->y };
+		bool anchorChanged = anchorPoint != newAnchorPoint;
+
+		/* Window region correction */
+		if (dimenionsChanged || (pos->flags & SWP_FRAMECHANGED))
+			updateRegion();
+
+		if (dimenionsChanged || anchorChanged)
+		{
+			/* Determine new current window state */
+			WindowState wOldState = windowState;
+
+			if (IsMaximized(hWnd))
+				windowState = WindowState::MAXIMIZED;
+			else if (IsMinimized(hWnd))
+				windowState = WindowState::MINIMIZED;
+			else 
+				windowState = WindowState::NORMAL;
+
+			/* Need to setup correct data before handling any event. */
+			anchorPoint = newAnchorPoint;
+			dimensions.normal = newDimensions;
+
+			if (!handleWindowStateEvent(wOldState, windowState))
+			{
+				/* It is not a window state change. It's moving or/and resizing. */
+
+				if (dimenionsChanged)
+					windowController.handleEvent(ComponentEvent::Window::ResizeEvent{});
+
+				if (anchorChanged)
+					windowController.handleEvent(ComponentEvent::Window::MoveEvent{});
+			}
+		}
+
+		/* 0 - processing this event */
+		return 0;
+	}
+
+	LRESULT WinAPIWindow::wmWindowPosChanging(WPARAM wParam, LPARAM lParam)
+	{
+		/*
+			This message COULD be handled here. But you should NOT change WinAPIWindow::dimensions or WinAPIWindow::anchorPoint here.
+			Note that WinAPIWindow::dimensions and WinAPIWindow::anchorPoint here is not updated yet.
+			It is better to handle anything that is related to position, dimensions or window state inside
+			WinAPIWindow::wmWindowPosChanged procedure;
+		*/
+		return DefWindowProc(hWnd, WM_WINDOWPOSCHANGING, wParam, lParam);
 	}
 
 	std::pair<std::set<ComponentEvent::Keyboard::ModificationKey>, std::set<ComponentEvent::Mouse::ButtonType>> WinAPIWindow::parseMouseKeyState(WORD keyState)
@@ -567,13 +821,64 @@ namespace Awincs
 		return { modificationKeys, pressedMouseButtons };
 	}
 
-	void WinAPIWindow::moveWindow(const Point& newAnchorPoint)
+	void WinAPIWindow::p_move(const Point& newAnchorPoint)
 	{
-		auto [width, height] = dimensions.normal;
-
-		// To fix Microsoft bug with WS_POPUP window when changing size
-		auto ret = MoveWindow(hWnd, newAnchorPoint.x, newAnchorPoint.y, width - resizeBorderWidth, height - resizeBorderWidth, TRUE);
+		/* Just change anchor position */
+		auto ret = SetWindowPos(hWnd, NULL, newAnchorPoint.x, newAnchorPoint.y, 0, 0,
+			SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_FRAMECHANGED | SWP_NOSENDCHANGING);
 		expect(ret);
+	}
+
+	void WinAPIWindow::p_smartMove(const Point& prevAp, const Point& ap)
+	{
+		if (ap != prevAp)
+			p_move(ap);
+	}
+
+	void WinAPIWindow::p_resize(const Dimensions& d)
+	{
+		/* Just change dimensions */
+		auto ret = SetWindowPos(hWnd, NULL, 0, 0, d.width, d.height,
+			SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_FRAMECHANGED | SWP_NOSENDCHANGING);
+		expect(ret);
+	}
+
+	void WinAPIWindow::p_smartResize(const Dimensions& prevD, const Dimensions& d)
+	{
+		if (d != prevD)
+			p_resize(d);
+	}
+
+	void WinAPIWindow::p_update()
+	{
+		/* Just update window */
+		auto ret = SetWindowPos(hWnd, NULL, 0, 0, 0, 0,
+			SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_FRAMECHANGED | SWP_NOSENDCHANGING);
+		expect(ret);
+	}
+
+	void WinAPIWindow::p_moveAndResize(const Point& an, const Dimensions& d)
+	{
+		/* Just move and resize window */
+		auto ret = SetWindowPos(hWnd, NULL, an.x, an.y, d.width, d.height,
+			SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_FRAMECHANGED | SWP_NOSENDCHANGING);
+		expect(ret);
+	}
+
+	void WinAPIWindow::p_smartMoveAndResize(const Point& prevAn, const Point& an, const Dimensions& prevD, const Dimensions& d)
+	{
+		bool anChanged = an != prevAn;
+		bool dChanged = d != prevD;
+		if (anChanged && dChanged)
+			return p_moveAndResize(an, d);
+		
+		if (anChanged)
+			return p_move(an);
+		
+		if (dChanged)
+			return p_resize(d);
+
+		expect(false);
 	}
 
 	void WinAPIWindow::redraw()
@@ -582,29 +887,25 @@ namespace Awincs
 		expect(ret);
 	}
 
-	void WinAPIWindow::changeWindowState(WPARAM wParam)
-	{
-		switch (wParam)
-		{
-		case SIZE_MAXIMIZED: windowState = WindowState::MAXIMIZED; break;
-		case SIZE_MINIMIZED: windowState = WindowState::MINIMIZED; break;
-		case SIZE_RESTORED: windowState = WindowState::NORMAL; break;
-		case SIZE_MAXHIDE: break;
-		case SIZE_MAXSHOW: break;
-		default: expect(false);
-		}
-	}
-
-	void WinAPIWindow::handleWindowStateEvent(WindowState prev, WindowState current)
+	bool WinAPIWindow::handleWindowStateEvent(WindowState prev, WindowState current)
 	{
 		if ((prev == WindowState::MAXIMIZED || prev == WindowState::MINIMIZED) && current == WindowState::NORMAL)
+		{
 			static_cast<ComponentEvent::Handler&>(windowController).handleEvent(ComponentEvent::Window::RestoreEvent{});
-		else if (current == WindowState::NORMAL)
-			static_cast<ComponentEvent::Handler&>(windowController).handleEvent(ComponentEvent::Window::ResizeEvent{});
+			return true;
+		}
 		else if (current == WindowState::MINIMIZED)
+		{
 			static_cast<ComponentEvent::Handler&>(windowController).handleEvent(ComponentEvent::Window::MinimizeEvent{});
+			return true;
+		}
 		else if (current == WindowState::MAXIMIZED)
+		{
 			static_cast<ComponentEvent::Handler&>(windowController).handleEvent(ComponentEvent::Window::MaximizeEvent{});
-	}
+			return true;
+		}
 
+		/* Could not handle this window state change. */
+		return false;
+	}
 }

@@ -35,6 +35,7 @@ namespace Awincs
 		{
 		public:
 			WinAPIWindowRegisterer();
+			~WinAPIWindowRegisterer();
 
 		public:
 			bool registered = false;
@@ -56,9 +57,9 @@ namespace Awincs
 		HWND getHWND()const;
 		void setTitle(const std::wstring& title);
 		const std::wstring& getTitle() const;
-		void setAnchorPoint(Point point);
+		void setAnchorPoint(const Point& point);
 		const Point& getAnchorPoint() const;
-		void setDimensions(Dimensions dims);
+		void setDimensions(const Dimensions& dims);
 		const Dimensions& getDimensions() const;
 		void draw(DrawCallback cb);
 		void setResizeBorderWidth(int width);
@@ -101,23 +102,39 @@ namespace Awincs
 		LRESULT wmNCCalcSize(WPARAM wParam, LPARAM lParam);
 		LRESULT wmCreate(WPARAM wParam, LPARAM lParam);
 		LRESULT wmGetMinMaxInfo(WPARAM wParam, LPARAM lParam);
+		LRESULT wmSetTextAndSetIcon(UINT uMsg, WPARAM wParam, LPARAM lParam);
+		LRESULT wmDWMCompositionChanged(WPARAM wParam, LPARAM lParam);
+		LRESULT wmNCActivate(WPARAM wParam, LPARAM lParam);
+		LRESULT wmNCPaint(WPARAM wParam, LPARAM lParam);
+		LRESULT wmNCUAHDrawFrameAndCaption(WPARAM wParam, LPARAM lParam);
+		LRESULT wmThemeChanged(WPARAM wParam, LPARAM lParam);
+		LRESULT wmWindowPosChanged(WPARAM wParam, LPARAM lParam);
+		LRESULT wmWindowPosChanging(WPARAM wParam, LPARAM lParam);
 
 		std::pair<std::set<ComponentEvent::Keyboard::ModificationKey>, std::set<ComponentEvent::Mouse::ButtonType>> parseMouseKeyState(WORD keyState);
-		void moveWindow(const Point& ap);
+		void p_move(const Point& ap);
+		void p_smartMove(const Point& prevAp, const Point& ap);
+		void p_resize(const Dimensions& d);
+		void p_smartResize(const Dimensions& prevD, const Dimensions& d);
+		void p_update();
+		void p_moveAndResize(const Point& an, const Dimensions& d);
+		void p_smartMoveAndResize(const Point& prevAn, const Point& an, const Dimensions& prevD, const Dimensions& d);
 		void redraw();
-		void changeWindowState(WPARAM wParam);
-		void handleWindowStateEvent(WindowState prev, WindowState current);
+		bool handleWindowStateEvent(WindowState prev, WindowState current);
+		void updateRegion();
+		bool hasAutohideAppbar(UINT edge, const RECT& mon);
+		void setupDWM();
 
 	private:
 		static constexpr int DEFAULT_RESIZE_BORDER_WIDTH							= 5;
-		static constexpr Dimensions ZERO_DIMENSIONS									= { DEFAULT_RESIZE_BORDER_WIDTH, DEFAULT_RESIZE_BORDER_WIDTH };
-		static constexpr Dimensions DEFAULT_WINDOW_DIMENSIONS						= { 1280 + DEFAULT_RESIZE_BORDER_WIDTH, 720 + DEFAULT_RESIZE_BORDER_WIDTH };
-		static constexpr Dimensions DEFAULT_MAXIMUM_DIMENSIONS						= ZERO_DIMENSIONS;
-		static constexpr Dimensions DEFAULT_MINIMUM_DIMENSIONS						= { 500 + DEFAULT_RESIZE_BORDER_WIDTH, 300 + DEFAULT_RESIZE_BORDER_WIDTH };
+		static constexpr Dimensions DEFAULT_WINDOW_DIMENSIONS						= { 1280, 720 };
+		static constexpr Dimensions DEFAULT_MAXIMUM_DIMENSIONS                      = { 0, 0 };
+		static constexpr Dimensions DEFAULT_MINIMUM_DIMENSIONS						= { 500, 300 };
 		static constexpr std::wstring_view DEFAULT_WINDOW_TITLE						= L"Default Window";
 		static constexpr Point DEFAULT_WINDOW_ANCHOR_POINT							= { 100, 100 };
 		static constexpr std::wstring_view WINDOW_CLASS_NAME						= L"WindowComponent";
 		static constexpr COLORREF DEFAULT_WINDOW_BACKGROUND_COLOR					= RGB(0x10, 0x20, 0x30);
+		static constexpr COLORREF DEFAUL_WINDOW_CHROMA_COLOR						= RGB(0xFF, 0x00, 0xFF);
 		static constexpr WindowState DEFAULT_WINDOW_STATE							= WindowState::NORMAL;
 		static WinAPIWindowRegisterer registerer;
 
@@ -129,13 +146,10 @@ namespace Awincs
 																						DEFAULT_MAXIMUM_DIMENSIONS, 
 																						DEFAULT_MINIMUM_DIMENSIONS };
 
-		// Cached User Dimensions: To fix Microsoft bug with WS_POPUP window when changing size don't use this inside WinAPIWindow class
-		WindowDimensions cuDimensions												= { DEFAULT_WINDOW_DIMENSIONS - DEFAULT_RESIZE_BORDER_WIDTH, 
-																						DEFAULT_MAXIMUM_DIMENSIONS - DEFAULT_RESIZE_BORDER_WIDTH, 
-																						DEFAULT_MINIMUM_DIMENSIONS - DEFAULT_RESIZE_BORDER_WIDTH} ;
-
 		int resizeBorderWidth														= DEFAULT_RESIZE_BORDER_WIDTH;
 		WindowState windowState														= DEFAULT_WINDOW_STATE;
+		bool compositionEnabled														= false;
+		bool themeEnabled															= false;
 		WindowController& windowController;
 		std::vector<DrawCallback> drawQueue;
 	};

@@ -6,22 +6,22 @@ namespace Awincs
 	namespace Geometry
 	{
 		template<typename T>
-		struct Point2D
-		{
-			T x;
-			T y;
-		};
-
-		using IntPoint2D = Point2D<int>;
-
-
-		template<typename T>
 		struct Dimensions2D
 		{
 			T width;
 			T height;
 
-			Dimensions2D<T>& operator-=(const Dimensions2D<T>& p)
+			inline bool operator==(const Dimensions2D<T>& p) const
+			{
+				return (p.width == width) && (p.height == height);
+			}
+
+			inline bool operator!=(const Dimensions2D<T>& p) const
+			{
+				return (p.width != width) || (p.height != height);
+			}
+
+			inline Dimensions2D<T>& operator-=(const Dimensions2D<T>& p)
 			{
 				width -= p.width;
 				height -= p.height;
@@ -32,7 +32,7 @@ namespace Awincs
 				return *this;
 			}
 
-			Dimensions2D<T>& operator+=(const Dimensions2D<T>& p)
+			inline Dimensions2D<T>& operator+=(const Dimensions2D<T>& p)
 			{
 				width += p.width;
 				height += p.height;
@@ -44,7 +44,7 @@ namespace Awincs
 			}
 
 			template<typename Number>
-			Dimensions2D<T>& operator+=(Number n)
+			inline Dimensions2D<T>& operator+=(Number n)
 			{
 
 				width += n;
@@ -57,7 +57,7 @@ namespace Awincs
 			}
 
 			template<typename Number>
-			Dimensions2D<T>& operator-=(Number n)
+			inline Dimensions2D<T>& operator-=(Number n)
 			{
 				width -= n;
 				height -= n;
@@ -69,7 +69,7 @@ namespace Awincs
 			}
 
 			template<typename Number>
-			Dimensions2D<T>& operator*=(Number n)
+			inline Dimensions2D<T>& operator*=(Number n)
 			{
 				expect(n >= 0);
 
@@ -80,7 +80,7 @@ namespace Awincs
 			}
 
 			template<typename Number>
-			Dimensions2D<T>& operator/=(Number n)
+			inline Dimensions2D<T>& operator/=(Number n)
 			{
 				expect(n > 0);
 
@@ -91,9 +91,9 @@ namespace Awincs
 			}
 
 			template<typename Number>
-			Dimensions2D<T> operator+(Number n) const
+			inline Dimensions2D<T> operator+(Number n) const
 			{
-				Dimensions2D<T> d = {width + n, height + n};
+				Dimensions2D<T> d = { width + n, height + n };
 
 				expect(d.width >= 0);
 				expect(d.height >= 0);
@@ -102,9 +102,9 @@ namespace Awincs
 			}
 
 			template<typename Number>
-			Dimensions2D<T> operator-(Number n) const
+			inline Dimensions2D<T> operator-(Number n) const
 			{
-				Dimensions2D<T> d = {width - n, height - n};
+				Dimensions2D<T> d = { width - n, height - n };
 
 				expect(d.width >= 0);
 				expect(d.height >= 0);
@@ -113,14 +113,14 @@ namespace Awincs
 			}
 
 			template<typename Number>
-			Dimensions2D<T> operator*(Number n) const
+			inline Dimensions2D<T> operator*(Number n) const
 			{
 				expect(n >= 0);
 				return { width * n, height * n };
 			}
 
 			template<typename Number>
-			Dimensions2D<T> operator/(Number n) const
+			inline Dimensions2D<T> operator/(Number n) const
 			{
 				expect(n > 0);
 				return { width / n, height / n };
@@ -128,6 +128,65 @@ namespace Awincs
 		};
 
 		using IntDimensions2D = Dimensions2D<int>;
+
+		template<typename T>
+		struct Point2D
+		{
+			T x;
+			T y;
+
+			inline bool operator==(const Point2D<T>& p) const
+			{
+				return (p.x == x) && (p.y == y);
+			}
+
+			inline bool operator!=(const Point2D<T>& p) const
+			{
+				return !((p.x == x) && (p.y == y));
+			}
+
+			inline Point2D<T> operator+(const Point2D& p) const
+			{
+				return { x + p.x, y + p.y };
+			}
+
+			inline Point2D<T> operator-(const Point2D& p) const
+			{
+				return { x - p.x, y - p.y };
+			}
+
+			template<typename Number>
+			inline Point2D<T> operator+(Number n) const
+			{
+				return { x + n, y + n};
+			}
+
+			template<typename Number>
+			inline Point2D<T> operator-(Number n) const
+			{
+				return { x - n, y - n };
+			}
+
+			template<typename Number>
+			inline Point2D<T> operator*(Number n) const
+			{
+				return { x * n, y * n };
+			}
+
+			template<typename Number>
+			inline Point2D<T> operator/(Number n) const
+			{
+				expect(n != 0);
+				return { x / n, y / n };
+			}
+
+			inline Point2D<T> operator+(const Dimensions2D<T>& d) const
+			{
+				return { x + d.width, y + d.height };
+			}
+		};
+
+		using IntPoint2D = Point2D<int>;
 
 		template<typename T>
 		class GeometryShape
@@ -142,6 +201,18 @@ namespace Awincs
 			public GeometryShape<T>
 		{
 		public:
+			Rectangle() = default;
+
+			Rectangle(const Point2D<T>& p1, const Point2D<T>& p2)
+			{
+				expect(p1.x <= p2.x);
+				expect(p1.y <= p2.y);
+
+				anchorPoint = p1;
+				auto pDiff = p2 - p1;
+				dimensions = Dimensions2D<T>{pDiff.x, pDiff.y};
+			}
+
 			Rectangle(const Point2D<T>& anchorPoint, const Dimensions2D<T> dimensions)
 				:
 				anchorPoint(anchorPoint), 
@@ -183,6 +254,16 @@ namespace Awincs
 			inline void setDimensions(const Dimensions2D<T> dims)
 			{
 				dimensions = dims;
+			}
+
+			inline bool operator==(const Rectangle<T>& r) const
+			{
+				return (r.anchorPoint == anchorPoint) && (r.dimensions == dimensions);
+			}
+
+			inline bool operator!=(const Rectangle<T>& r) const
+			{
+				return (r.anchorPoint != anchorPoint) || (r.dimensions != dimensions);
 			}
 
 		private:

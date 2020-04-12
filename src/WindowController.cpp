@@ -91,17 +91,23 @@ namespace Awincs
 	}
 	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::MoveEvent& e)
 	{
-		auto shouldHandleEvent = Component::handleEvent(e);
-		expect(shouldHandleEvent);
-		p_redraw();
-		return true;
+		return handleWindowEvent(e);
 	}
 	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::ResizeEvent& e)
 	{
-		auto shouldHandleEvent = Component::handleEvent(e);
-		expect(shouldHandleEvent);
-		p_redraw();
-		return true;
+		return handleWindowEvent(e);
+	}
+	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::MinimizeEvent& e)
+	{
+		return handleWindowEvent(e);
+	}
+	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::MaximizeEvent& e)
+	{
+		return handleWindowEvent(e);
+	}
+	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::RestoreEvent& e)
+	{
+		return handleWindowEvent(e);
 	}
 	void WindowController::setMoveCapture(CaptureCallback cb)
 	{
@@ -138,8 +144,7 @@ namespace Awincs
 
 		auto [width, height] = window->getDimensions();
 
-		// To fix black background on resizing
-		Rectangle(hdc, 0, 0, width + BACKGROUND_FIX_ON_RESIZE, height + BACKGROUND_FIX_ON_RESIZE);
+		Rectangle(hdc, 0, 0, width, height);
 
 		SelectObject(hdc, prevPen);
 		DeleteObject(pen);

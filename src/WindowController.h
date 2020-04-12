@@ -45,14 +45,25 @@ namespace Awincs
 
 		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::MoveEvent&) override;
 		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::ResizeEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::MinimizeEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::MaximizeEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::RestoreEvent&) override;
 
 	protected:
 		virtual void draw(HDC) const override;
 		void p_redraw();
 
+		template<typename WindowEvent>
+		inline ShouldParentHandleEvent handleWindowEvent(const WindowEvent& e)
+		{
+			auto shouldHandleEvent = Component::handleEvent(e);
+			expect(shouldHandleEvent);
+			p_redraw();
+			return true;
+		}
+
 	private:
-		static constexpr COLORREF DEFAULT_BACKGROUND_COLOR = RGB(10, 20, 30);
-		static constexpr int BACKGROUND_FIX_ON_RESIZE = 100;
+		static constexpr COLORREF DEFAULT_BACKGROUND_COLOR = RGB(0x10, 0x20, 0x30);
 
 		COLORREF backgroundColor = DEFAULT_BACKGROUND_COLOR;
 		std::unique_ptr<WinAPIWindow> window;
