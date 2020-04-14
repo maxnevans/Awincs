@@ -26,3 +26,6 @@
 /* Windows Stuff */
 #include <windows.h>
 #include <windowsx.h>
+
+/* GDI+ */
+#include <gdiplus.h>

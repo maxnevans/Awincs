@@ -12,6 +12,20 @@ namespace Awincs
 	namespace
 	{
 		namespace Event = ComponentEvent;
+		namespace gp = Gdiplus;
+
+		static constexpr const int makeARGB(int a, int r, int g, int b)
+		{
+			return (((gp::ARGB)(b) << gp::Color::BlueShift) |
+				((gp::ARGB)(g) << gp::Color::GreenShift) |
+				((gp::ARGB)(r) << gp::Color::RedShift) |
+				((gp::ARGB)(a) << gp::Color::AlphaShift));
+		}
+
+		static constexpr const int makeARGB(int r, int g, int b)
+		{
+			return makeARGB(0xff, r, g, b);
+		}
 	}
 
 	class Component
@@ -25,7 +39,6 @@ namespace Awincs
 		using Point = Geometry::IntPoint2D;
 		using Dimensions = Geometry::IntDimensions2D;
 
-	public:
 		using ComponentCallback			= std::function<void(Component&)>;
 		using ShouldParentHandleEvent	= Event::Handler::ShouldParentHandleEvent;
 
@@ -60,7 +73,7 @@ namespace Awincs
 		virtual ShouldParentHandleEvent handleEvent(const Event::Window::RestoreEvent&) override;
 
 	protected:
-		virtual void draw(HDC hdc) const;
+		virtual void draw(Gdiplus::Graphics&) const;
 		std::weak_ptr<Component> getParent();
 
 	protected:

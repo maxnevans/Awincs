@@ -50,7 +50,7 @@ namespace Awincs
 		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::RestoreEvent&) override;
 
 	protected:
-		virtual void draw(HDC) const override;
+		virtual void draw(Gdiplus::Graphics&) const override;
 		void p_redraw();
 
 		template<typename WindowEvent>
@@ -63,9 +63,9 @@ namespace Awincs
 		}
 
 	private:
-		static constexpr COLORREF DEFAULT_BACKGROUND_COLOR = RGB(0x10, 0x20, 0x30);
+		static constexpr gp::ARGB DEFAULT_BACKGROUND_COLOR = 0xff005cc5;
 
-		COLORREF backgroundColor = DEFAULT_BACKGROUND_COLOR;
+		gp::ARGB backgroundColor = DEFAULT_BACKGROUND_COLOR;
 		std::unique_ptr<WinAPIWindow> window;
 		CaptureCallback moveCapture;
 	};

@@ -15,7 +15,7 @@ namespace Awincs
 	protected:
 		using Point = Geometry::IntPoint2D;
 		using Dimensions = Geometry::IntDimensions2D;
-		using DrawCallback = std::function<void(HDC)>;
+		using DrawCallback = std::function<void(Gdiplus::Graphics&)>;
 
 		struct WindowDimensions
 		{
@@ -76,7 +76,9 @@ namespace Awincs
 
 	protected:
 
-		/*Window Message Handlers*/
+		/* Window Message Handlers */
+
+		/* Mouse & Keyboard events */
 		LRESULT wmLButtonUp(WPARAM wParam, LPARAM lParam);
 		LRESULT wmLButtonDown(WPARAM wParam, LPARAM lParam);
 		LRESULT wmRButtonUp(WPARAM wParam, LPARAM lParam);
@@ -91,25 +93,29 @@ namespace Awincs
 		LRESULT wmChar(WPARAM wParam, LPARAM lParam);
 		LRESULT wmKeyUp(WPARAM wParam, LPARAM lParam);
 		LRESULT wmKeyDown(WPARAM wParam, LPARAM lParam);
-		LRESULT wmClose(WPARAM wParam, LPARAM lParam);
-		LRESULT wmPaint(WPARAM wParam, LPARAM lParam);
+
+		/* Window position and size events */
 		LRESULT wmSizing(WPARAM wParam, LPARAM lParam);
-		LRESULT wmMoving(WPARAM wParam, LPARAM lParam);
 		LRESULT wmSize(WPARAM wParam, LPARAM lParam);
+		LRESULT wmMoving(WPARAM wParam, LPARAM lParam);
 		LRESULT wmMove(WPARAM wParam, LPARAM lParam);
-		LRESULT wmEraseBackground(WPARAM wParam, LPARAM lParam);
-		LRESULT wmNCHitTest(WPARAM wParam, LPARAM lParam);
-		LRESULT wmNCCalcSize(WPARAM wParam, LPARAM lParam);
-		LRESULT wmCreate(WPARAM wParam, LPARAM lParam);
 		LRESULT wmGetMinMaxInfo(WPARAM wParam, LPARAM lParam);
-		LRESULT wmSetTextAndSetIcon(UINT uMsg, WPARAM wParam, LPARAM lParam);
-		LRESULT wmDWMCompositionChanged(WPARAM wParam, LPARAM lParam);
-		LRESULT wmNCActivate(WPARAM wParam, LPARAM lParam);
-		LRESULT wmNCPaint(WPARAM wParam, LPARAM lParam);
-		LRESULT wmNCUAHDrawFrameAndCaption(WPARAM wParam, LPARAM lParam);
-		LRESULT wmThemeChanged(WPARAM wParam, LPARAM lParam);
 		LRESULT wmWindowPosChanged(WPARAM wParam, LPARAM lParam);
 		LRESULT wmWindowPosChanging(WPARAM wParam, LPARAM lParam);
+		LRESULT wmNCActivate(WPARAM wParam, LPARAM lParam);
+		LRESULT wmNCHitTest(WPARAM wParam, LPARAM lParam);
+		LRESULT wmNCCalcSize(WPARAM wParam, LPARAM lParam);
+
+		/* Other window events */
+		LRESULT wmEraseBackground(WPARAM wParam, LPARAM lParam);
+		LRESULT wmClose(WPARAM wParam, LPARAM lParam);
+		LRESULT wmPaint(WPARAM wParam, LPARAM lParam);
+		LRESULT wmCreate(WPARAM wParam, LPARAM lParam);
+		LRESULT wmDWMCompositionChanged(WPARAM wParam, LPARAM lParam);
+		LRESULT wmSetTextAndSetIcon(UINT uMsg, WPARAM wParam, LPARAM lParam);
+		LRESULT wmThemeChanged(WPARAM wParam, LPARAM lParam);
+		LRESULT wmNCPaint(WPARAM wParam, LPARAM lParam);
+		LRESULT wmNCUAHDrawFrameAndCaption(WPARAM wParam, LPARAM lParam);
 
 		std::pair<std::set<ComponentEvent::Keyboard::ModificationKey>, std::set<ComponentEvent::Mouse::ButtonType>> parseMouseKeyState(WORD keyState);
 		void p_move(const Point& ap);
@@ -133,8 +139,6 @@ namespace Awincs
 		static constexpr std::wstring_view DEFAULT_WINDOW_TITLE						= L"Default Window";
 		static constexpr Point DEFAULT_WINDOW_ANCHOR_POINT							= { 100, 100 };
 		static constexpr std::wstring_view WINDOW_CLASS_NAME						= L"WindowComponent";
-		static constexpr COLORREF DEFAULT_WINDOW_BACKGROUND_COLOR					= RGB(0x10, 0x20, 0x30);
-		static constexpr COLORREF DEFAUL_WINDOW_CHROMA_COLOR						= RGB(0xFF, 0x00, 0xFF);
 		static constexpr WindowState DEFAULT_WINDOW_STATE							= WindowState::NORMAL;
 		static WinAPIWindowRegisterer registerer;
 

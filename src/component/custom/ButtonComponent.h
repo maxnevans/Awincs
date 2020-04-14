@@ -18,22 +18,21 @@ namespace Awincs
 		virtual ShouldParentHandleEvent handleEvent(const Event::Keyboard::KeyEvent& e) override;
 
 	protected:
-		virtual void draw(HDC hdc) const override;
-		
-	private:
-		static HFONT getFont(std::wstring fontFamily);
+		virtual void draw(gp::Graphics&) const override;
+	
 
 	private:
-		static constexpr COLORREF DEFAULT_BACKGROUND_COLOR					= RGB(0xfF, 0xf, 0xf);
-		static constexpr COLORREF DEFAULT_HOVER_BACKGROUND_COLOR			= RGB(0x2f, 0x2f, 0x2f);
-		static constexpr COLORREF DEFAULT_TITLE_COLOR						= RGB(0xff, 0xff, 0xff);
-		static constexpr COLORREF DEFAULT_HOVER_TITLE_COLOR					= RGB(0xff, 0xff, 0xff);
+		static constexpr gp::ARGB DEFAULT_BACKGROUND_COLOR					= makeARGB(0xfF, 0xf, 0xf);
+		static constexpr gp::ARGB DEFAULT_HOVER_BACKGROUND_COLOR			= makeARGB(0x2f, 0x2f, 0x2f);
+		static constexpr gp::ARGB DEFAULT_TITLE_COLOR						= makeARGB(0xff, 0xff, 0xff);
+		static constexpr gp::ARGB DEFAULT_HOVER_TITLE_COLOR					= makeARGB(0xff, 0xff, 0xff);
 		static constexpr const wchar_t* DEFAULT_TITLE_FONT_FAMILY			= L"Tahoma";
+		static constexpr gp::REAL DEFAULT_TITLE_SIZE						= 17;
 
 		std::wstring title = L"";
-		COLORREF backgroundColor = DEFAULT_BACKGROUND_COLOR;
-		COLORREF hoverBackgroundColor = DEFAULT_HOVER_BACKGROUND_COLOR;
-		COLORREF titleColor = DEFAULT_TITLE_COLOR;
-		COLORREF hoverTitleColor = DEFAULT_HOVER_TITLE_COLOR;
+		gp::ARGB backgroundColor = DEFAULT_BACKGROUND_COLOR;
+		gp::ARGB hoverBackgroundColor = DEFAULT_HOVER_BACKGROUND_COLOR;
+		gp::ARGB titleColor = DEFAULT_TITLE_COLOR;
+		gp::ARGB hoverTitleColor = DEFAULT_HOVER_TITLE_COLOR;
 	};
 }

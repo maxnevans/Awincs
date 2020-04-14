@@ -10,12 +10,12 @@ namespace Awincs
 
 		if (e.character == L'\b')
 		{
-			if (!value.empty())
-				value.pop_back();
+			if (!text.empty())
+				text.pop_back();
 		}
 		else
 		{
-			value += e.character;
+			text += e.character;
 		}
 			
 		Component::redraw();
@@ -23,40 +23,18 @@ namespace Awincs
 		return true;
 	}
 
-	void InputComponent::draw(HDC hdc) const
+	void InputComponent::draw(gp::Graphics& gfx) const
 	{
-		auto brush = CreateSolidBrush(backgroundColor);
-		auto prevBrush = SelectObject(hdc, brush);
-
-		auto pen = CreatePen(PS_NULL, 0, RGB(0, 0, 0));
-		auto prevPen = SelectObject(hdc, pen);
-
 		auto [width, height] = getDimensions();
 		auto [x, y] = getGlobalAnchorPoint();
 
-		Rectangle(hdc, x, y, x + width, y + height);
+		gfx.FillRectangle(&gp::SolidBrush{ gp::Color{DEFAULT_BACKGROUND_COLOR} }, gp::Rect{ x, y, width, height });
+		gfx.DrawString(text.c_str(), static_cast<INT>(text.size()),
+			&gp::Font{ DEFAULT_TEXT_FONT_FAMILY, DEFAULT_TEXT_SIZE },
+			gp::PointF{ static_cast<gp::REAL>(x), static_cast<gp::REAL>(y) },
+			&gp::SolidBrush(gp::Color{ DEFAULT_TEXT_COLOR }));
 
-		HFONT font = getFont(DEFAULT_TEXT_FONT_FAMILY);
-		auto prevFont = SelectObject(hdc, font);
-
-		SIZE size = {};
-		GetTextExtentPoint32(hdc, value.c_str(), static_cast<int>(value.size()), &size);
-
-		int actualX = x + width / 2 - size.cx / 2;
-		int actualY = y + height / 2 - size.cy / 2;
-
-		TextOut(hdc, actualX, actualY, value.c_str(), static_cast<int>(value.size()));
-
-		SelectObject(hdc, prevFont);
-		DeleteObject(font);
-
-		SelectObject(hdc, prevPen);
-		DeleteObject(pen);
-
-		SelectObject(hdc, prevBrush);
-		DeleteObject(brush);
-
-		Component::draw(hdc);
+		Component::draw(gfx);
 	}
 	HFONT InputComponent::getFont(std::wstring fontFamily)
 	{

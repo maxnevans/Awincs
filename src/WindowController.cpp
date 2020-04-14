@@ -1,8 +1,9 @@
 #include "pch.h"
 #include "WindowController.h"
 
+#include <DebugConsole.h>
+
 #include "WindowControllerException.h"
-#include "../../DebugConsole/include/DebugConsole.h"
 
 namespace Awincs
 {
@@ -68,51 +69,63 @@ namespace Awincs
 	{
 		window->show();
 	}
+
 	void WindowController::hide()
 	{
 		window->hide();
 	}
+
 	void WindowController::redraw()
 	{
 		DCONSOLE(L"WindowController::redraw()\n");
 		p_redraw();
 	}
+
 	void WindowController::closeWindow()
 	{
 		window->close();
 	}
+
 	void WindowController::minimizeWindow()
 	{
 		window->minimize();
 	}
+
 	void WindowController::maximizeWindow()
 	{
 		window->maximize();
 	}
+
 	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::MoveEvent& e)
 	{
 		return handleWindowEvent(e);
 	}
+
 	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::ResizeEvent& e)
 	{
 		return handleWindowEvent(e);
 	}
+
 	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::MinimizeEvent& e)
 	{
 		return handleWindowEvent(e);
 	}
+
 	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::MaximizeEvent& e)
 	{
 		return handleWindowEvent(e);
 	}
+
 	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::RestoreEvent& e)
 	{
 		return handleWindowEvent(e);
 	}
+
 	void WindowController::setMoveCapture(CaptureCallback cb)
 	{
 		moveCapture = cb;
 	}
+
 	bool WindowController::testMoveCapture(const Point& p) const
 	{
 		if (!moveCapture)
@@ -120,44 +133,30 @@ namespace Awincs
 
 		return moveCapture(transformToLocalPoint(p));
 	}
+
 	bool WindowController::checkAffiliationIgnoreChildren(const Point& p) const
 	{
 		auto [width, height] = getDimensions();
-
 		return (p.x >= 0) && (p.x < width) && (p.y >= 0) && (p.y < height);
 	}
 
 	WindowController::Point WindowController::transformToLocalPoint(const Point& p) const
 	{
 		auto [x, y] = getAnchorPoint();
-
 		return {p.x - x, p.y - y};
 	}
 
-	void WindowController::draw(HDC hdc) const
+	void WindowController::draw(Gdiplus::Graphics& gfx) const
 	{
-		auto brush = CreateSolidBrush(backgroundColor);
-		auto prevBrush = SelectObject(hdc, brush);
-
-		auto pen = CreatePen(PS_NULL, 0, RGB(0, 0, 0));
-		auto prevPen = SelectObject(hdc, pen);
-
 		auto [width, height] = window->getDimensions();
-
-		Rectangle(hdc, 0, 0, width, height);
-
-		SelectObject(hdc, prevPen);
-		DeleteObject(pen);
-
-		SelectObject(hdc, prevBrush);
-		DeleteObject(brush);
-
-		Component::draw(hdc);
+		gfx.FillRectangle(&gp::SolidBrush{ gp::Color{backgroundColor} }, gp::Rect{0, 0, width, height});
+		Component::draw(gfx);
 	}
+
 	void WindowController::p_redraw()
 	{
-		window->draw([&](HDC hdc) {
-			this->draw(hdc);
+		window->draw([this](gp::Graphics& gfx) {
+			this->draw(gfx);
 		});
 	}
 }

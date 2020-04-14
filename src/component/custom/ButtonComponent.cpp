@@ -1,45 +1,25 @@
 #include "../../pch.h"
 #include "ButtonComponent.h"
 
-#include "../../../../DebugConsole/include/DebugConsole.h"
+#include <DebugConsole.h>
+
 #include "../../Geometry.h"
 
 namespace Awincs
 {
-	void ButtonComponent::draw(HDC hdc) const
+	void ButtonComponent::draw(gp::Graphics& gfx) const
 	{
-		auto brush = CreateSolidBrush(backgroundColor);
-		auto prevBrush = SelectObject(hdc, brush);
-
-		auto pen = CreatePen(PS_NULL, 0, RGB(0, 0, 0));
-		auto prevPen = SelectObject(hdc, pen);
 
 		auto [width, height] = getDimensions();
 		auto [x, y] = getGlobalAnchorPoint();
 
-		Rectangle(hdc, x, y, x + width, y + height);
+		gfx.FillRectangle(&gp::SolidBrush{ gp::Color{backgroundColor} }, gp::Rect{ x, y, width, height });		
+		gfx.DrawString(title.c_str(), static_cast<INT>(title.size()), 
+			&gp::Font{ DEFAULT_TITLE_FONT_FAMILY, DEFAULT_TITLE_SIZE }, 
+			gp::PointF{ static_cast<gp::REAL>(x), static_cast<gp::REAL>(y) },
+			&gp::SolidBrush(gp::Color{ DEFAULT_TITLE_COLOR }));
 
-		HFONT font = getFont(DEFAULT_TITLE_FONT_FAMILY);
-		auto prevFont = SelectObject(hdc, font);
-
-		SIZE size = {};
-		GetTextExtentPoint32(hdc, title.c_str(), static_cast<int>(title.size()), &size);
-
-		int actualX = x + width / 2 - size.cx / 2;
-		int actualY = y + height / 2 - size.cy / 2;
-
-		TextOut(hdc, actualX, actualY, title.c_str(), static_cast<int>(title.size()));
-
-		SelectObject(hdc, prevFont);
-		DeleteObject(font);
-
-		SelectObject(hdc, prevPen);
-		DeleteObject(pen);
-
-		SelectObject(hdc, prevBrush);
-		DeleteObject(brush);
-
-		Component::draw(hdc);
+		Component::draw(gfx);
 	}
 
 	void ButtonComponent::setTitle(const std::wstring& title)
@@ -78,12 +58,4 @@ namespace Awincs
 
 		return true;
 	}
-
-	HFONT ButtonComponent::getFont(std::wstring fontFamily)
-	{
-		return CreateFontW(0, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
-			DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-			CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, fontFamily.c_str());
-	}
-
 }

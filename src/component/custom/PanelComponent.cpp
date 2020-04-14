@@ -8,18 +8,12 @@ bool Awincs::PanelComponent::checkAffiliationIgnoreChildren(const Point& pt) con
 	return Geometry::IntRectangle::checkAffiliationIgnoreChildren(getAnchorPoint(), getDimensions(), pt);
 }
 
-void Awincs::PanelComponent::draw(HDC hdc) const
+void Awincs::PanelComponent::draw(gp::Graphics& gfx) const
 {
-	auto brush = CreateSolidBrush(backgroundColor);
-	auto prevBrush = SelectObject(hdc, brush);
-
 	auto [width, height] = getDimensions();
 	auto [x, y] = getGlobalAnchorPoint();
 
-	Rectangle(hdc, x, y, x + width, y + height);
+	gfx.FillRectangle(&gp::SolidBrush{ gp::Color{backgroundColor} },gp::Rect{ x, y, width, height });
 
-	SelectObject(hdc, prevBrush);
-	DeleteObject(brush);
-
-	Component::draw(hdc);
+	Component::draw(gfx);
 }

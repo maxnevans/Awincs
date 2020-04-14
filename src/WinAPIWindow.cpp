@@ -35,7 +35,7 @@ namespace Awincs
 		wndClass.lpfnWndProc = setupWindowProc;
 		wndClass.style = CS_VREDRAW | CS_HREDRAW;
 		wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-		wndClass.hbrBackground = CreateSolidBrush(DEFAULT_WINDOW_BACKGROUND_COLOR);
+		wndClass.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
 
 		if (RegisterClassEx(&wndClass) == FALSE)
 		{
@@ -148,9 +148,8 @@ namespace Awincs
 		DwmIsCompositionEnabled(&reinterpret_cast<BOOL&>(compositionEnabled));
 
 		if (compositionEnabled) {
-			/* The window needs a frame to show a shadow, so give it the smallest
-			   amount of frame possible */
-			MARGINS m = { 0,0,1,0 };
+			/* Deleting all frames */
+			MARGINS m = { 0,0,0,0 };
 			DWORD attr = DWMNCRP_ENABLED;
 			DwmExtendFrameIntoClientArea(hWnd, &m);
 			DwmSetWindowAttribute(hWnd, DWMWA_NCRENDERING_POLICY, &attr, sizeof(DWORD));
@@ -164,24 +163,15 @@ namespace Awincs
 		auto [x, y] = this->anchorPoint;
 		auto [width, height] = this->dimensions.normal;
 
-		CreateWindowEx(WS_EX_APPWINDOW | WS_EX_LAYERED, WINDOW_CLASS_NAME.data(), 
+		CreateWindowEx(WS_EX_APPWINDOW, WINDOW_CLASS_NAME.data(), 
 			windowTitle.c_str(), WS_OVERLAPPEDWINDOW | WS_SIZEBOX,
 			x, y, width, height, NULL, NULL, hInstance, this);
 
 		if (auto errorCode = GetLastError(); errorCode != ERROR_SUCCESS)
-		{
 			throw WindowException(L"Failed to create window! Error code: " + std::to_wstring(errorCode));
-		}
-
-
-		SetLayeredWindowAttributes(hWnd, DEFAUL_WINDOW_CHROMA_COLOR, 0, LWA_COLORKEY);
 
 		setupDWM();
-
 		updateRegion();
-
-		ShowWindow(hWnd, SW_SHOW);
-		UpdateWindow(hWnd);
 	}
 
 	void WinAPIWindow::show()
@@ -515,10 +505,16 @@ namespace Awincs
 		HBITMAP hBitmap = CreateCompatibleBitmap(hdc, width, height);
 		SelectObject(memHdc, hBitmap);
 
-		for (const auto& dc : drawQueue)
-			dc(memHdc);
+		{
+			/* Doc on Gdiplus::Graphics: should be deleted before device context */
+			Gdiplus::Graphics g(memHdc);
 
-		drawQueue.clear();
+			for (const auto& dc : drawQueue)
+				dc(g);
+
+			/* Don't forget to clear drawing queue when everything is drawn */
+			drawQueue.clear();
+		}
 
 		BitBlt(hdc, 0, 0, width, height, memHdc, 0, 0, SRCCOPY);
 		EndPaint(hWnd, &ps);
@@ -632,7 +628,7 @@ namespace Awincs
 			};
 
 			HMONITOR mon = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
-			MONITORINFO mi = { sizeof mi }; // cbSize
+			MONITORINFO mi = { sizeof(mi) }; // cbSize
 			GetMonitorInfo(mon, &mi);
 
 			/* If the client rectangle is the same as the monitor's rectangle,
@@ -700,7 +696,8 @@ namespace Awincs
 
 			return result;
 		}
-			return DefWindowProc(hWnd, uMsg, wParam, lParam);
+		
+		return DefWindowProc(hWnd, uMsg, wParam, lParam);
 	}
 
 	LRESULT WinAPIWindow::wmDWMCompositionChanged(WPARAM wParam, LPARAM lParam)

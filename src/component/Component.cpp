@@ -125,10 +125,10 @@ namespace Awincs
 		parent->maximizeWindow();
 	}
 
-	void Component::draw(HDC hdc) const
+	void Component::draw(Gdiplus::Graphics& gfx) const
 	{
 		for (const auto& component : children)
-			component->draw(hdc);
+			component->draw(gfx);
 	}
 
 	std::weak_ptr<Component> Component::getParent()

@@ -14,10 +14,10 @@ namespace Awincs
 		virtual bool checkAffiliationIgnoreChildren(const Point& pt) const override;
 
 	protected:
-		virtual void draw(HDC hdc) const override;
+		virtual void draw(gp::Graphics&) const override;
 
 	private:
-		static constexpr COLORREF DEFAULT_BACKGROUND_COLOR = RGB(10, 20, 30);
+		static constexpr gp::ARGB DEFAULT_BACKGROUND_COLOR = makeARGB(0x10, 0x20, 0x30);
 
 		COLORREF backgroundColor = DEFAULT_BACKGROUND_COLOR;
 	};
