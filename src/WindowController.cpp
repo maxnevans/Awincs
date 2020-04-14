@@ -134,30 +134,19 @@ namespace Awincs
 		return {p.x - x, p.y - y};
 	}
 
-	void WindowController::draw(HDC hdc) const
+	void WindowController::draw(Surface& s) const
 	{
-		auto brush = CreateSolidBrush(backgroundColor);
-		auto prevBrush = SelectObject(hdc, brush);
-
-		auto pen = CreatePen(PS_NULL, 0, RGB(0, 0, 0));
-		auto prevPen = SelectObject(hdc, pen);
-
 		auto [width, height] = window->getDimensions();
 
-		Rectangle(hdc, 0, 0, width, height);
+		s.fillRectangle({ 0xFF, 0x10, 0x20, 0x30}, {0, 0, width, height});
 
-		SelectObject(hdc, prevPen);
-		DeleteObject(pen);
-
-		SelectObject(hdc, prevBrush);
-		DeleteObject(brush);
-
-		Component::draw(hdc);
+		Component::draw(s);
 	}
+
 	void WindowController::p_redraw()
 	{
-		window->draw([&](HDC hdc) {
-			this->draw(hdc);
+		window->draw([&](Surface& s) {
+			this->draw(s);
 		});
 	}
 }

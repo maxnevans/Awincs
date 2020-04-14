@@ -50,7 +50,7 @@ namespace Awincs
 		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::RestoreEvent&) override;
 
 	protected:
-		virtual void draw(HDC) const override;
+		virtual void draw(Surface&) const override;
 		void p_redraw();
 
 		template<typename WindowEvent>

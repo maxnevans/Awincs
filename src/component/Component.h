@@ -6,6 +6,7 @@
 #include "event/Handler.h"
 #include "event/Event.h"
 #include "../WindowStateHandler.h"
+#include "../Surface.h"
 
 namespace Awincs
 {
@@ -60,7 +61,7 @@ namespace Awincs
 		virtual ShouldParentHandleEvent handleEvent(const Event::Window::RestoreEvent&) override;
 
 	protected:
-		virtual void draw(HDC hdc) const;
+		virtual void draw(Surface&) const;
 		std::weak_ptr<Component> getParent();
 
 	protected:

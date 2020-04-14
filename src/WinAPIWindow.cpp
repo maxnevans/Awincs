@@ -1,13 +1,14 @@
 #include "pch.h"
 #include "WinAPIWindow.h"
 
-#include "../../DebugConsole/include/DebugConsole.h"
-#include "base/DebugUntils.h"
-#include "WindowException.h"
-
 #include <dwmapi.h>
 #include <versionhelpers.h>
 #include <uxtheme.h>
+#include <DebugConsole.h>
+
+#include "base/DebugUntils.h"
+#include "WindowException.h"
+#include "Surface.h"
 
 #ifndef WM_NCUAHDRAWCAPTION
 #define WM_NCUAHDRAWCAPTION (0x00AE)
@@ -27,7 +28,7 @@ namespace Awincs
 	{
 		expect(!registered);
 
-		WNDCLASSEXW wndClass = {};
+		WNDCLASSEX wndClass = {};
 
 		wndClass.lpszClassName = WINDOW_CLASS_NAME.data();
 		wndClass.cbSize = sizeof(WNDCLASSEX);
@@ -164,7 +165,7 @@ namespace Awincs
 		auto [x, y] = this->anchorPoint;
 		auto [width, height] = this->dimensions.normal;
 
-		CreateWindowEx(WS_EX_APPWINDOW | WS_EX_LAYERED, WINDOW_CLASS_NAME.data(), 
+		CreateWindowEx(WS_EX_APPWINDOW, WINDOW_CLASS_NAME.data(), 
 			windowTitle.c_str(), WS_OVERLAPPEDWINDOW | WS_SIZEBOX,
 			x, y, width, height, NULL, NULL, hInstance, this);
 
@@ -174,7 +175,7 @@ namespace Awincs
 		}
 
 
-		SetLayeredWindowAttributes(hWnd, DEFAUL_WINDOW_CHROMA_COLOR, 0, LWA_COLORKEY);
+		//SetLayeredWindowAttributes(hWnd, DEFAUL_WINDOW_CHROMA_COLOR, 0, LWA_COLORKEY);
 
 		setupDWM();
 
@@ -515,10 +516,14 @@ namespace Awincs
 		HBITMAP hBitmap = CreateCompatibleBitmap(hdc, width, height);
 		SelectObject(memHdc, hBitmap);
 
-		for (const auto& dc : drawQueue)
-			dc(memHdc);
+		{
+			Surface surface(memHdc, dimensions.normal);
 
-		drawQueue.clear();
+			for (const auto& dc : drawQueue)
+				dc(surface);
+
+			drawQueue.clear();
+		}
 
 		BitBlt(hdc, 0, 0, width, height, memHdc, 0, 0, SRCCOPY);
 		EndPaint(hWnd, &ps);

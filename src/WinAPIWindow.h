@@ -15,7 +15,7 @@ namespace Awincs
 	protected:
 		using Point = Geometry::IntPoint2D;
 		using Dimensions = Geometry::IntDimensions2D;
-		using DrawCallback = std::function<void(HDC)>;
+		using DrawCallback = std::function<void(Surface&)>;
 
 		struct WindowDimensions
 		{

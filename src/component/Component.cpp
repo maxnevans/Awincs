@@ -125,10 +125,10 @@ namespace Awincs
 		parent->maximizeWindow();
 	}
 
-	void Component::draw(HDC hdc) const
+	void Component::draw(Surface& s) const
 	{
 		for (const auto& component : children)
-			component->draw(hdc);
+			component->draw(s);
 	}
 
 	std::weak_ptr<Component> Component::getParent()

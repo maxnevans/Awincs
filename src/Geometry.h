@@ -203,6 +203,15 @@ namespace Awincs
 		public:
 			Rectangle() = default;
 
+			Rectangle(T x, T y, T width, T height)
+				:
+				anchorPoint(x, y),
+				dimensions(width, height)
+			{
+				expect(width >= 0);
+				expect(height >= 0);
+			}
+
 			Rectangle(const Point2D<T>& p1, const Point2D<T>& p2)
 			{
 				expect(p1.x <= p2.x);
