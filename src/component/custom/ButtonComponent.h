@@ -16,6 +16,9 @@ namespace Awincs
 		virtual ShouldParentHandleEvent checkAffiliationIgnoreChildren(const Point& pt) const override;
 		virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::ButtonEvent& e) override;
 		virtual ShouldParentHandleEvent handleEvent(const Event::Keyboard::KeyEvent& e) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::HoverStart& e) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::HoverEnd& e) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::Hover& e) override;
 
 	protected:
 		virtual void draw(gp::Graphics&) const override;

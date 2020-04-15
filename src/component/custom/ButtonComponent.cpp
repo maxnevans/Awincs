@@ -40,7 +40,6 @@ namespace Awincs
 	bool ButtonComponent::handleEvent(const ComponentEvent::Mouse::ButtonEvent& e)
 	{
 		bool shouldHandle = Component::handleEvent(e);
-
 		expect(shouldHandle);
 
 		DCONSOLE(L"Button component event handling: coordinates(" << e.point.x << L"," << e.point.y << L")\n");
@@ -51,10 +50,32 @@ namespace Awincs
 	ButtonComponent::ShouldParentHandleEvent ButtonComponent::handleEvent(const Event::Keyboard::KeyEvent& e)
 	{
 		bool shouldHandle = Component::handleEvent(e);
-
 		expect(shouldHandle);
 
 		DCONSOLE(L"KeyEvent in button handler!\n");
+
+		return true;
+	}
+	ButtonComponent::ShouldParentHandleEvent ButtonComponent::handleEvent(const Event::Mouse::HoverStart& e)
+	{
+		auto shouldHandle = Component::handleEvent(e);
+		expect(shouldHandle);
+
+		DCONSOLE(L"ButtonComponent: HoverStart\n");
+		return true;
+	}
+	ButtonComponent::ShouldParentHandleEvent ButtonComponent::handleEvent(const Event::Mouse::HoverEnd& e)
+	{
+		auto shouldHandle = Component::handleEvent(e);
+		expect(shouldHandle);
+
+		DCONSOLE(L"ButtonComponent: HoverEnd\n");
+		return true;
+	}
+	ButtonComponent::ShouldParentHandleEvent ButtonComponent::handleEvent(const Event::Mouse::Hover& e)
+	{
+		auto shouldHandle = Component::handleEvent(e);
+		expect(shouldHandle);
 
 		return true;
 	}

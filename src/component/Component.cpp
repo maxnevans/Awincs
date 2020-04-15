@@ -33,25 +33,17 @@ namespace Awincs
 
 	Component::Point Component::getGlobalAnchorPoint() const
 	{
-		auto [x, y] = getAnchorPoint();
+		auto gPoint = anchorPoint;
 
 		if (auto prnt = parent.lock())
-		{
-			auto [globalX, globalY] = parent.lock()->getGlobalAnchorPoint();
+			gPoint += parent.lock()->getGlobalAnchorPoint();
 
-			x += globalX;
-			y += globalY;
-		}
-
-		return { x, y };
+		return gPoint;
 	}
 
 	Component::Point Component::transformToLocalPoint(const Point& point) const
 	{
-		return {
-			point.x - anchorPoint.x,
-			point.y - anchorPoint.y
-		};
+		return point - anchorPoint;
 	}
 
 	void Component::setParent(const std::shared_ptr<Component>& parent)
@@ -153,6 +145,64 @@ namespace Awincs
 		return handleMouseEvent(e);
 	}
 	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Mouse::WheelEvent& e)
+	{
+		return handleMouseEvent(e);
+	}
+	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Mouse::Hover& e)
+	{
+		auto childHandler = getMouseEventComponentHandler(e);
+		bool bothPresent = childHandler && hoveredChild;
+		bool bothDoesNotPresent = !childHandler && !hoveredChild;
+
+		/* Save prev child */
+		auto hoveredChildPrev = hoveredChild;
+		hoveredChild = childHandler;
+
+		/* Hover on empty area (WindowController area) */
+		if (bothDoesNotPresent)
+			return true;
+
+		/* Hover on same component */
+		bool isTheSameComponent = &**childHandler == &**hoveredChildPrev;
+		if (bothPresent && isTheSameComponent)
+			return (*childHandler)->handleEvent(adaptMouseEventToHandler(e, *childHandler));
+
+		/* Hovered child changed */
+
+		/* Both are present */
+		if (bothPresent)
+		{
+			/* Previous child should receive Event::Mouse::HoverEnd */
+			(*hoveredChildPrev)->handleEvent(Event::Mouse::HoverEnd{});
+
+			/* New child should receive Event::Mouse::HoverStart */
+			return (*childHandler)->handleEvent(Event::Mouse::HoverStart{ adaptMouseEventToHandler(e, *childHandler) });
+		}
+
+		/* One is present */
+
+		if (childHandler)
+		{
+			/* New child should receive Event::Mouse::HoverStart */
+			return (*childHandler)->handleEvent(Event::Mouse::HoverStart{ adaptMouseEventToHandler(e, *childHandler) });
+		}
+
+		if (hoveredChildPrev)
+		{
+			/* Previous child should receive Event::Mouse::HoverEnd */
+			(*hoveredChildPrev)->handleEvent(Event::Mouse::HoverEnd{});
+			return true;
+		}
+
+		expect(false);
+		/* Fallback default return: will never hit this return */
+		return true;
+	}
+	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Mouse::HoverStart& e)
+	{
+		return handleMouseEvent(e);
+	}
+	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Mouse::HoverEnd& e)
 	{
 		return handleMouseEvent(e);
 	}

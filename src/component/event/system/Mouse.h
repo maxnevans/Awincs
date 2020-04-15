@@ -50,6 +50,25 @@ namespace Awincs
 				DOWN
 			};
 
+			struct Hover
+				:
+				public Event
+			{
+
+			};
+
+			struct HoverStart
+				:
+				public Hover
+			{
+			};
+
+			struct HoverEnd
+				:
+				public Hover
+			{
+			};
+
 			struct WheelEvent
 				:
 				public Event

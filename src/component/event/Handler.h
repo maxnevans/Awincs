@@ -12,6 +12,9 @@ namespace Awincs
 			using ShouldParentHandleEvent = bool;
 
 		public:
+			virtual ShouldParentHandleEvent handleEvent(const Mouse::Hover&) = 0;
+			virtual ShouldParentHandleEvent handleEvent(const Mouse::HoverStart&) = 0;
+			virtual ShouldParentHandleEvent handleEvent(const Mouse::HoverEnd&) = 0;
 			virtual ShouldParentHandleEvent handleEvent(const Mouse::ButtonEvent&) = 0;
 			virtual ShouldParentHandleEvent handleEvent(const Mouse::WheelEvent&) = 0;
 			virtual ShouldParentHandleEvent handleEvent(const Keyboard::KeyEvent&) = 0;

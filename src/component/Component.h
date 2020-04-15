@@ -63,6 +63,9 @@ namespace Awincs
 		virtual void maximizeWindow() override;
 		virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::ButtonEvent&) override;
 		virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::WheelEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::Hover&) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::HoverStart&) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::HoverEnd&) override;
 		virtual ShouldParentHandleEvent handleEvent(const Event::Keyboard::KeyEvent&) override;
 		virtual ShouldParentHandleEvent handleEvent(const Event::Keyboard::InputEvent&) override;
 		virtual ShouldParentHandleEvent handleEvent(const Event::Window::ResizeEvent&) override;
@@ -75,39 +78,55 @@ namespace Awincs
 	protected:
 		virtual void draw(Gdiplus::Graphics&) const;
 		std::weak_ptr<Component> getParent();
-
-	protected:
 		virtual void addChild(const std::shared_ptr<Component>& child);
 		virtual void removeChild(const std::shared_ptr<Component>& child);
 
 	private:
-	template<typename GMouseEvent>
-	// requires std::is_convertable<GMouseEvent, ComponentEvent::MouseEvent>::value_type
-	ShouldParentHandleEvent handleMouseEvent(const GMouseEvent& e)
-	{
-		if (!children.empty())
+		template<typename GMouseEvent>
+		// requires std::is_convertable<GMouseEvent, ComponentEvent::MouseEvent>::value_type
+		std::optional<std::shared_ptr<Component>> getMouseEventComponentHandler(const GMouseEvent& e)
 		{
-			auto eCopy = e;
-			for (const auto& child : children)
-			{
-				eCopy.point = child->transformToLocalPoint(e.point);
-				if (child->checkAffiliationIgnoreChildren(e.point))
-					return child->handleEvent(eCopy);
-			}
+			if (!children.empty())
+				for (const auto& child : children)
+					if (child->checkAffiliationIgnoreChildren(e.point))
+						return child;
+
+			return std::nullopt;
 		}
-		return true;
-	}
-	template<typename GNonMouseEvent>
-	// requires std::is_convertable<GNonMouseEvent, ComponentEvent::CoreEvent>::value_type
-	ShouldParentHandleEvent handleNonMouseEvent(const GNonMouseEvent& e)
-	{
-		bool shouldComponentHandleEvent = true;
 
-		for (const auto& child : children)
-			shouldComponentHandleEvent = child->handleEvent(e) && shouldComponentHandleEvent;
+		template<typename GMouseEvent>
+		ShouldParentHandleEvent handleMouseEvent(const GMouseEvent& e)
+		{
+			auto handler = getMouseEventComponentHandler(e);
+			
+			if (handler)
+			{
+				auto eAdapted = adaptMouseEventToHandler(e, *handler);
+				return (*handler)->handleEvent(eAdapted);
+			}
 
-		return shouldComponentHandleEvent;
-	}
+			return true;
+		}
+
+		template<typename GNonMouseEvent>
+		// requires std::is_convertable<GNonMouseEvent, ComponentEvent::CoreEvent>::value_type
+		ShouldParentHandleEvent handleNonMouseEvent(const GNonMouseEvent& e)
+		{
+			bool shouldComponentHandleEvent = true;
+
+			for (const auto& child : children)
+				shouldComponentHandleEvent = child->handleEvent(e) && shouldComponentHandleEvent;
+
+			return shouldComponentHandleEvent;
+		}
+
+		template<typename GMouseEvent>
+		GMouseEvent adaptMouseEventToHandler(const GMouseEvent& e, std::shared_ptr<Component>& handler)
+		{
+			auto eAdapted = e;
+			eAdapted.point = handler->transformToLocalPoint(e.point);
+			return eAdapted;
+		}
 
 	private:
 		static constexpr Point DEFAULT_ANCHOR_POINT					= { 0, 0 };
@@ -116,6 +135,7 @@ namespace Awincs
 		Point anchorPoint											= DEFAULT_ANCHOR_POINT;
 		Dimensions dimensions										= DEFAULT_DIMENSIONS;
 		bool performRedraw											= false;
+		std::optional<std::shared_ptr<Component>> hoveredChild		= std::nullopt;
 		std::vector<std::shared_ptr<Component>> children;
 		std::weak_ptr<Component> parent;
 	};

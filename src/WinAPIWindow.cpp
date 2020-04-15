@@ -322,6 +322,9 @@ namespace Awincs
 		case WM_CHAR: return wmChar(wParam, lParam);
 		case WM_UNICHAR: return wmUnichar(wParam, lParam);
 		case WM_MOUSEWHEEL: return wmMouseWheel(wParam, lParam);
+		case WM_MOUSEMOVE: return wmMouseMove(wParam, lParam);
+		case WM_MOUSELEAVE: return wmMouseLeave(wParam, lParam);
+		case WM_MOUSEACTIVATE: return wmMouseActivate(wParam, lParam);
 		case WM_RBUTTONDOWN: return wmRButtonDown(wParam, lParam);
 		case WM_RBUTTONUP: return wmRButtonUp(wParam, lParam);
 		case WM_LBUTTONDOWN: return wmLButtonDown(wParam, lParam);
@@ -446,6 +449,33 @@ namespace Awincs
 
 		static_cast<ComponentEvent::Handler&>(windowController).handleEvent(e);
 
+		return 0;
+	}
+
+	LRESULT WinAPIWindow::wmMouseMove(WPARAM wParam, LPARAM lParam)
+	{
+		auto [modKeys, mouseButtons] = parseMouseKeyState(GET_KEYSTATE_WPARAM(wParam));
+
+		ComponentEvent::Mouse::Hover e = {};
+
+		e.point = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+		e.modificationKeys = modKeys;
+		e.pressedMouseButtons = mouseButtons;
+
+		//DCONSOLE(L"WM_MOUSEMOVE: (" << e.point.x << L"," << e.point.y << L")\n");
+		static_cast<ComponentEvent::Handler&>(windowController).handleEvent(e);
+		return 0;
+	}
+
+	LRESULT WinAPIWindow::wmMouseActivate(WPARAM wParam, LPARAM lParam)
+	{
+		// TODO: Handle window activation by mouse
+		return DefWindowProc(hWnd, WM_MOUSEACTIVATE, wParam, lParam);
+	}
+
+	LRESULT WinAPIWindow::wmMouseLeave(WPARAM wParam, LPARAM lParam)
+	{
+		static_cast<ComponentEvent::Handler&>(windowController).handleEvent(ComponentEvent::Mouse::HoverEnd{});
 		return 0;
 	}
 

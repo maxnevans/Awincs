@@ -89,6 +89,9 @@ namespace Awincs
 		LRESULT wmXButtonDown(WPARAM wParam, LPARAM lParam);
 		LRESULT wmMouseButton(WPARAM wParam, LPARAM lParam, ComponentEvent::Mouse::ButtonType mbt, ComponentEvent::Mouse::ButtonAction mba);
 		LRESULT wmMouseWheel(WPARAM wParam, LPARAM lParam);
+		LRESULT wmMouseMove(WPARAM wParam, LPARAM lParam);
+		LRESULT wmMouseActivate(WPARAM wParam, LPARAM lParam);
+		LRESULT wmMouseLeave(WPARAM wParam, LPARAM lParam);
 		LRESULT wmUnichar(WPARAM wParam, LPARAM lParam);
 		LRESULT wmChar(WPARAM wParam, LPARAM lParam);
 		LRESULT wmKeyUp(WPARAM wParam, LPARAM lParam);
