@@ -535,6 +535,8 @@ namespace Awincs
 		HBITMAP hBitmap = CreateCompatibleBitmap(hdc, width, height);
 		SelectObject(memHdc, hBitmap);
 
+		BitBlt(memHdc, 0, 0, width, height, hdc, 0, 0, SRCCOPY);
+
 		{
 			/* Doc on Gdiplus::Graphics: should be deleted before device context */
 			Gdiplus::Graphics g(memHdc);
