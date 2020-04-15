@@ -12,6 +12,8 @@ namespace Awincs
 		Component({0, 0}, dims),
 		window(std::make_unique<WinAPIWindow>(*this, anchorPoint, dims))
 	{
+		p_setupDrawCallback(*window);
+		p_setRedrawCallback([this] { p_redraw(); });
 		window->create();
 	}
 
@@ -98,27 +100,27 @@ namespace Awincs
 
 	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::MoveEvent& e)
 	{
-		return handleWindowEvent(e);
+		return p_handleWindowEvent(e);
 	}
 
 	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::ResizeEvent& e)
 	{
-		return handleWindowEvent(e);
+		return p_handleWindowEvent(e);
 	}
 
 	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::MinimizeEvent& e)
 	{
-		return handleWindowEvent(e);
+		return p_handleWindowEvent(e);
 	}
 
 	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::MaximizeEvent& e)
 	{
-		return handleWindowEvent(e);
+		return p_handleWindowEvent(e);
 	}
 
 	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::RestoreEvent& e)
 	{
-		return handleWindowEvent(e);
+		return p_handleWindowEvent(e);
 	}
 
 	void WindowController::setMoveCapture(CaptureCallback cb)
@@ -136,27 +138,33 @@ namespace Awincs
 
 	bool WindowController::checkAffiliationIgnoreChildren(const Point& p) const
 	{
-		auto [width, height] = getDimensions();
+		auto [width, height] = window->getDimensions();
 		return (p.x >= 0) && (p.x < width) && (p.y >= 0) && (p.y < height);
 	}
 
 	WindowController::Point WindowController::transformToLocalPoint(const Point& p) const
 	{
-		auto [x, y] = getAnchorPoint();
-		return {p.x - x, p.y - y};
+		return p - window->getAnchorPoint();
 	}
 
 	void WindowController::draw(Gdiplus::Graphics& gfx) const
 	{
 		auto [width, height] = window->getDimensions();
 		gfx.FillRectangle(&gp::SolidBrush{ gp::Color{backgroundColor} }, gp::Rect{0, 0, width, height});
-		Component::draw(gfx);
 	}
 
 	void WindowController::p_redraw()
 	{
-		window->draw([this](gp::Graphics& gfx) {
-			this->draw(gfx);
+		Component::redraw();
+		window->redraw();
+	}
+
+	void WindowController::p_setupDrawCallback(WinAPIWindow& wnd)
+	{
+		/* TODO: supply draw manager for drawing with DrawPolicies */
+		wnd.setDrawCallback([this] (Gdiplus::Graphics& gfx)
+		{
+			this->p_draw(gfx);
 		});
 	}
 }

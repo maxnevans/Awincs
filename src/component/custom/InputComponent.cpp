@@ -33,13 +33,5 @@ namespace Awincs
 			&gp::Font{ DEFAULT_TEXT_FONT_FAMILY, DEFAULT_TEXT_SIZE },
 			gp::PointF{ static_cast<gp::REAL>(x), static_cast<gp::REAL>(y) },
 			&gp::SolidBrush(gp::Color{ DEFAULT_TEXT_COLOR }));
-
-		Component::draw(gfx);
-	}
-	HFONT InputComponent::getFont(std::wstring fontFamily)
-	{
-		return CreateFontW(0, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
-			DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-			CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, fontFamily.c_str());
 	}
 }

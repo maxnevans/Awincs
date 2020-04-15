@@ -61,7 +61,8 @@ namespace Awincs
 		const Point& getAnchorPoint() const;
 		void setDimensions(const Dimensions& dims);
 		const Dimensions& getDimensions() const;
-		void draw(DrawCallback cb);
+		void redraw();
+		void setDrawCallback(DrawCallback cb);
 		void setResizeBorderWidth(int width);
 		void setMinDimensions(const Dimensions&);
 		void setMaxDimensions(const Dimensions&);
@@ -128,7 +129,7 @@ namespace Awincs
 		void p_update();
 		void p_moveAndResize(const Point& an, const Dimensions& d);
 		void p_smartMoveAndResize(const Point& prevAn, const Point& an, const Dimensions& prevD, const Dimensions& d);
-		void redraw();
+		void p_redraw();
 		bool handleWindowStateEvent(WindowState prev, WindowState current);
 		void updateRegion();
 		bool hasAutohideAppbar(UINT edge, const RECT& mon);
@@ -157,7 +158,7 @@ namespace Awincs
 		WindowState windowState														= DEFAULT_WINDOW_STATE;
 		bool compositionEnabled														= false;
 		bool themeEnabled															= false;
+		DrawCallback drawCallback													= nullptr;
 		WindowController& windowController;
-		std::vector<DrawCallback> drawQueue;
 	};
 }

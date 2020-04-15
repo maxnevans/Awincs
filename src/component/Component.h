@@ -34,13 +34,11 @@ namespace Awincs
 		public ComponentEvent::Handler,
 		public WindowStateHandler
 	{
-		
 	public:
 		using Point = Geometry::IntPoint2D;
 		using Dimensions = Geometry::IntDimensions2D;
-
-		using ComponentCallback			= std::function<void(Component&)>;
 		using ShouldParentHandleEvent	= Event::Handler::ShouldParentHandleEvent;
+		using RedrawCallback = std::function<void()>;
 
 	public:
 		Component() = default;
@@ -53,9 +51,7 @@ namespace Awincs
 		Point transformToLocalPoint(const Point& point) const;
 		virtual void setParent(const std::shared_ptr<Component>& parent);
 		virtual void unsetParent();
-		void foreachChildren(ComponentCallback cb);
 		virtual void redraw();
-		virtual bool shouldRedraw() const;
 		virtual bool checkAffiliationIgnoreChildren(const Point& pt) const;
 		virtual bool checkAffiliationDontIgnoreChildren(const Point&) const;
 		virtual void closeWindow() override;
@@ -76,10 +72,13 @@ namespace Awincs
 		virtual ShouldParentHandleEvent handleEvent(const Event::Window::RestoreEvent&) override;
 
 	protected:
-		virtual void draw(Gdiplus::Graphics&) const;
+		virtual void draw(gp::Graphics&) const {}
 		std::weak_ptr<Component> getParent();
 		virtual void addChild(const std::shared_ptr<Component>& child);
 		virtual void removeChild(const std::shared_ptr<Component>& child);
+		virtual void p_draw(gp::Graphics& gfx);
+		void p_setRedrawCallback(RedrawCallback cb);
+
 
 	private:
 		template<typename GMouseEvent>
@@ -134,8 +133,9 @@ namespace Awincs
 
 		Point anchorPoint											= DEFAULT_ANCHOR_POINT;
 		Dimensions dimensions										= DEFAULT_DIMENSIONS;
-		bool performRedraw											= false;
+		bool shouldRedraw											= true;
 		std::optional<std::shared_ptr<Component>> hoveredChild		= std::nullopt;
+		RedrawCallback redrawCallback								= nullptr;
 		std::vector<std::shared_ptr<Component>> children;
 		std::weak_ptr<Component> parent;
 	};

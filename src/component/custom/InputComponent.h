@@ -18,9 +18,6 @@ namespace Awincs
 		virtual void draw(gp::Graphics&) const override;
 
 	private:
-		static HFONT getFont(std::wstring fontFamily);
-
-	private:
 		static constexpr gp::ARGB DEFAULT_BACKGROUND_COLOR = makeARGB(25, 50, 100);
 		static constexpr gp::ARGB DEFAULT_CURSOR_COLOR = makeARGB(255, 255, 255);
 		static constexpr gp::ARGB DEFAULT_TEXT_COLOR = makeARGB(170, 170, 170);

@@ -10,9 +10,6 @@ namespace Awincs
 		:
 		public Component
 	{
-	public:
-		virtual bool checkAffiliationIgnoreChildren(const Point& pt) const override;
-
 	protected:
 		virtual void draw(gp::Graphics&) const override;
 

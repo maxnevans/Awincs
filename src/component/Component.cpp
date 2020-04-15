@@ -48,38 +48,31 @@ namespace Awincs
 
 	void Component::setParent(const std::shared_ptr<Component>& parent)
 	{
+		/* To avoid recursive call for redraw */
+		redrawCallback = parent->redrawCallback;
+
 		parent->addChild(shared_from_this());
 		this->parent = parent;
 	}
 
 	void Component::unsetParent()
 	{
+		redrawCallback = nullptr;
 		this->parent.reset();
-	}
-
-	void Component::foreachChildren(ComponentCallback cb)
-	{
-		for (const auto& component : children)
-			cb(*component);
 	}
 
 	void Component::redraw()
 	{
-		performRedraw = true;
+		shouldRedraw = true;
 		auto p = parent.lock();
 
 		if (p)
 			p->redraw();
 	}
 
-	bool Component::shouldRedraw() const
-	{
-		return performRedraw;
-	}
-
 	bool Component::checkAffiliationIgnoreChildren(const Point& pt) const
 	{
-		return false;
+		return Geometry::IntRectangle::checkAffiliationIgnoreChildren(anchorPoint, dimensions, pt);
 	}
 
 	bool Component::checkAffiliationDontIgnoreChildren(const Point& p) const
@@ -115,13 +108,7 @@ namespace Awincs
 		auto parent = getParent().lock();
 		expect(parent);
 		parent->maximizeWindow();
-	}
-
-	void Component::draw(Gdiplus::Graphics& gfx) const
-	{
-		for (const auto& component : children)
-			component->draw(gfx);
-	}
+	}	
 
 	std::weak_ptr<Component> Component::getParent()
 	{
@@ -132,6 +119,7 @@ namespace Awincs
 	{
 		children.push_back(child);
 	}
+
 	void Component::removeChild(const std::shared_ptr<Component>& child)
 	{
 		auto index = std::find(children.begin(), children.end(), child);
@@ -140,6 +128,31 @@ namespace Awincs
 
 		expect(removed != children.end());
 	}
+	void Component::p_draw(gp::Graphics& gfx)
+	{
+		bool hasBeenRedrawn = shouldRedraw;
+		if (shouldRedraw)
+		{
+			shouldRedraw = false;
+			draw(gfx);
+		}
+		
+		for (const auto& child : children)
+		{
+			if (hasBeenRedrawn)
+				child->shouldRedraw = true;
+
+			child->p_draw(gfx);
+		}
+			
+	}
+
+	void Component::p_setRedrawCallback(RedrawCallback cb)
+	{
+		expect(!redrawCallback);
+		redrawCallback = cb;
+	}
+
 	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Mouse::ButtonEvent& e)
 	{
 		return handleMouseEvent(e);

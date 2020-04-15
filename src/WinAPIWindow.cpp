@@ -1,13 +1,13 @@
 #include "pch.h"
 #include "WinAPIWindow.h"
 
-#include "../../DebugConsole/include/DebugConsole.h"
-#include "base/DebugUntils.h"
-#include "WindowException.h"
-
+#include <DebugConsole.h>
 #include <dwmapi.h>
 #include <versionhelpers.h>
 #include <uxtheme.h>
+
+#include "base/DebugUntils.h"
+#include "WindowException.h"
 
 #ifndef WM_NCUAHDRAWCAPTION
 #define WM_NCUAHDRAWCAPTION (0x00AE)
@@ -237,11 +237,15 @@ namespace Awincs
 		return dimensions.normal;
 	}
 
-	void WinAPIWindow::draw(DrawCallback cb)
+	void WinAPIWindow::redraw()
 	{
-		drawQueue.emplace_back(std::move(cb));
 		auto ret = InvalidateRect(hWnd, NULL, FALSE);
 		expect(ret == TRUE);
+	}
+
+	void WinAPIWindow::setDrawCallback(DrawCallback cb)
+	{
+		drawCallback = std::move(cb);
 	}
 
 	void WinAPIWindow::setResizeBorderWidth(int width)
@@ -539,13 +543,10 @@ namespace Awincs
 
 		{
 			/* Doc on Gdiplus::Graphics: should be deleted before device context */
-			Gdiplus::Graphics g(memHdc);
+			Gdiplus::Graphics gfx(memHdc);
 
-			for (const auto& dc : drawQueue)
-				dc(g);
-
-			/* Don't forget to clear drawing queue when everything is drawn */
-			drawQueue.clear();
+			if (drawCallback)
+				drawCallback(gfx);
 		}
 
 		BitBlt(hdc, 0, 0, width, height, memHdc, 0, 0, SRCCOPY);
@@ -910,7 +911,7 @@ namespace Awincs
 		expect(false);
 	}
 
-	void WinAPIWindow::redraw()
+	void WinAPIWindow::p_redraw()
 	{
 		auto ret = RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_NOERASE | RDW_INTERNALPAINT);
 		expect(ret);

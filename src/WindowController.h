@@ -42,7 +42,7 @@ namespace Awincs
 		virtual void closeWindow() override;
 		virtual void minimizeWindow() override;
 		virtual void maximizeWindow() override;
-
+		
 		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::MoveEvent&) override;
 		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::ResizeEvent&) override;
 		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::MinimizeEvent&) override;
@@ -51,10 +51,12 @@ namespace Awincs
 
 	protected:
 		virtual void draw(Gdiplus::Graphics&) const override;
+
 		void p_redraw();
+		void p_setupDrawCallback(WinAPIWindow&);
 
 		template<typename WindowEvent>
-		inline ShouldParentHandleEvent handleWindowEvent(const WindowEvent& e)
+		inline ShouldParentHandleEvent p_handleWindowEvent(const WindowEvent& e)
 		{
 			auto shouldHandleEvent = Component::handleEvent(e);
 			expect(shouldHandleEvent);

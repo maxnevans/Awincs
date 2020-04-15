@@ -9,7 +9,6 @@ namespace Awincs
 {
 	void ButtonComponent::draw(gp::Graphics& gfx) const
 	{
-
 		auto [width, height] = getDimensions();
 		auto [x, y] = getGlobalAnchorPoint();
 
@@ -18,8 +17,6 @@ namespace Awincs
 			&gp::Font{ DEFAULT_TITLE_FONT_FAMILY, DEFAULT_TITLE_SIZE }, 
 			gp::PointF{ static_cast<gp::REAL>(x), static_cast<gp::REAL>(y) },
 			&gp::SolidBrush(gp::Color{ DEFAULT_TITLE_COLOR }));
-
-		Component::draw(gfx);
 	}
 
 	void ButtonComponent::setTitle(const std::wstring& title)
