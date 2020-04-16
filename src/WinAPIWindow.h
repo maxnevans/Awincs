@@ -48,6 +48,7 @@ namespace Awincs
 		WinAPIWindow(const WinAPIWindow&) = delete;
 		WinAPIWindow& operator=(const WinAPIWindow&) = delete;
 
+		void processMessages();
 		void create();
 		void show();
 		void hide();

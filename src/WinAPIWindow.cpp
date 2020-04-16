@@ -156,6 +156,16 @@ namespace Awincs
 		}
 	}
 
+	void WinAPIWindow::processMessages()
+	{
+		MSG msg;
+		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
+
 	void WinAPIWindow::create()
 	{
 		expect(registerer.registered);
