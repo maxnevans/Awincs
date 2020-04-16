@@ -1,7 +1,7 @@
-#include "../../pch.h"
+#include "pch.h"
 #include "PanelComponent.h"
 
-#include "../../Geometry.h"
+#include "Geometry.h"
 
 void Awincs::PanelComponent::draw(gp::Graphics& gfx) const
 {

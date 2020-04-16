@@ -4,7 +4,7 @@
 
 #include "Geometry.h"
 #include "WindowController.h"
-#include "component/event/Event.h"
+#include "event/Event.h"
 
 namespace Awincs
 {

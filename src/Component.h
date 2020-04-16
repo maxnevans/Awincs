@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../pch.h"
+#include "pch.h"
 
-#include "../Geometry.h"
+#include "Geometry.h"
 #include "event/Handler.h"
 #include "event/Event.h"
-#include "../WindowStateHandler.h"
+#include "WindowStateHandler.h"
 
 namespace Awincs
 {
@@ -21,7 +21,6 @@ namespace Awincs
 				((gp::ARGB)(r) << gp::Color::RedShift) |
 				((gp::ARGB)(a) << gp::Color::AlphaShift));
 		}
-
 		static constexpr const int makeARGB(int r, int g, int b)
 		{
 			return makeARGB(0xff, r, g, b);

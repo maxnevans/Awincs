@@ -1,8 +1,8 @@
-#include "../../pch.h"
+#include "pch.h"
 
 #include "CloseButtonComponent.h"
 
-#include "../../WindowStateHandler.h"
+#include "WindowStateHandler.h"
 
 namespace Awincs
 {

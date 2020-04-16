@@ -2,8 +2,8 @@
 
 #include "pch.h"
 
-#include "WinAPIWindow.h"
-#include "component/Component.h"
+#include "platform/WinAPIWindow.h"
+#include "Component.h"
 
 namespace Awincs
 {

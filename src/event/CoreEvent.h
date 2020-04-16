@@ -1,9 +1,6 @@
 #pragma once
 
-#include "../../pch.h"
-
-#include "../../base/DebugUntils.h"
-#include "../../Geometry.h"
+#include "pch.h"
 
 namespace Awincs
 {

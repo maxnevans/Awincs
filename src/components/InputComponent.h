@@ -1,9 +1,8 @@
 #pragma once
 
-#include "../../pch.h"
+#include "pch.h"
 
 #include "../Component.h"
-#include "../../WindowStateHandler.h"
 
 namespace Awincs
 {

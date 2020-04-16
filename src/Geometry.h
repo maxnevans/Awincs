@@ -1,5 +1,5 @@
 #pragma once
-#include "base/DebugUntils.h"
+#include "Core.h"
 
 namespace Awincs
 {

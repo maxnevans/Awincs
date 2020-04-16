@@ -1,9 +1,9 @@
-#include "../../pch.h"
+#include "pch.h"
 #include "ButtonComponent.h"
 
 #include <DebugConsole.h>
 
-#include "../../Geometry.h"
+#include "Geometry.h"
 
 namespace Awincs
 {

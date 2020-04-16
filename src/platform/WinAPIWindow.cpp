@@ -6,7 +6,7 @@
 #include <versionhelpers.h>
 #include <uxtheme.h>
 
-#include "base/DebugUntils.h"
+#include "Core.h"
 #include "WindowException.h"
 
 #ifndef WM_NCUAHDRAWCAPTION
