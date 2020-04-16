@@ -11,12 +11,21 @@ namespace Awincs
 	{
 		auto [width, height] = getDimensions();
 		auto [x, y] = getGlobalAnchorPoint();
-
-		gfx.FillRectangle(&gp::SolidBrush{ gp::Color{backgroundColor} }, gp::Rect{ x, y, width, height });		
+		gfx.FillRectangle(&gp::SolidBrush{ gp::Color{backgroundColors.at(state)} }, gp::Rect{ x, y, width, height });
 		gfx.DrawString(title.c_str(), static_cast<INT>(title.size()), 
-			&gp::Font{ DEFAULT_TITLE_FONT_FAMILY, DEFAULT_TITLE_SIZE }, 
+			&gp::Font{ DEFAULT_TITLE_FONT_FAMILY, DEFAULT_TITLE_SIZE, 0, Gdiplus::UnitPixel }, 
 			gp::PointF{ static_cast<gp::REAL>(x), static_cast<gp::REAL>(y) },
-			&gp::SolidBrush(gp::Color{ DEFAULT_TITLE_COLOR }));
+			&gp::SolidBrush(gp::Color{ titleColors.at(state) }));
+	}
+
+	void ButtonComponent::setBackgroundColor(gp::ARGB color, ComponentState state)
+	{
+		backgroundColors[state] = color;
+	}
+
+	void ButtonComponent::setTitleColor(gp::ARGB color, ComponentState state)
+	{
+		titleColors[state] = color;
 	}
 
 	void ButtonComponent::setTitle(const std::wstring& title)
@@ -27,6 +36,10 @@ namespace Awincs
 	std::wstring ButtonComponent::getTitle() const
 	{
 		return title;
+	}
+
+	void ButtonComponent::onClick(std::function<void()>)
+	{
 	}
 
 	bool ButtonComponent::checkAffiliationIgnoreChildren(const Point& pt) const
@@ -53,22 +66,33 @@ namespace Awincs
 
 		return true;
 	}
+
 	ButtonComponent::ShouldParentHandleEvent ButtonComponent::handleEvent(const Event::Mouse::HoverStart& e)
 	{
 		auto shouldHandle = Component::handleEvent(e);
 		expect(shouldHandle);
 
+		state = ComponentState::HOVER;
+
+		Component::redraw();
+
 		DCONSOLE(L"ButtonComponent: HoverStart\n");
 		return true;
 	}
+
 	ButtonComponent::ShouldParentHandleEvent ButtonComponent::handleEvent(const Event::Mouse::HoverEnd& e)
 	{
 		auto shouldHandle = Component::handleEvent(e);
 		expect(shouldHandle);
 
+		state = ComponentState::DEFAULT;
+
+		Component::redraw();
+
 		DCONSOLE(L"ButtonComponent: HoverEnd\n");
 		return true;
 	}
+
 	ButtonComponent::ShouldParentHandleEvent ButtonComponent::handleEvent(const Event::Mouse::Hover& e)
 	{
 		auto shouldHandle = Component::handleEvent(e);
