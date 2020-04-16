@@ -97,6 +97,7 @@ namespace Awincs
 		LRESULT wmChar(WPARAM wParam, LPARAM lParam);
 		LRESULT wmKeyUp(WPARAM wParam, LPARAM lParam);
 		LRESULT wmKeyDown(WPARAM wParam, LPARAM lParam);
+		LRESULT wmNCMouseMove(WPARAM wParam, LPARAM lParam);
 
 		/* Window position and size events */
 		LRESULT wmSizing(WPARAM wParam, LPARAM lParam);

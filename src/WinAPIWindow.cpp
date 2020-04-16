@@ -327,6 +327,7 @@ namespace Awincs
 		case WM_UNICHAR: return wmUnichar(wParam, lParam);
 		case WM_MOUSEWHEEL: return wmMouseWheel(wParam, lParam);
 		case WM_MOUSEMOVE: return wmMouseMove(wParam, lParam);
+		case WM_NCMOUSEMOVE: return wmNCMouseMove(wParam, lParam);
 		case WM_MOUSELEAVE: return wmMouseLeave(wParam, lParam);
 		case WM_MOUSEACTIVATE: return wmMouseActivate(wParam, lParam);
 		case WM_RBUTTONDOWN: return wmRButtonDown(wParam, lParam);
@@ -517,6 +518,34 @@ namespace Awincs
 
 		static_cast<ComponentEvent::Handler&>(windowController).handleEvent(e);
 
+		return 0;
+	}
+
+	LRESULT WinAPIWindow::wmNCMouseMove(WPARAM wParam, LPARAM lParam)
+	{
+		WORD leftButton = GetSystemMetrics(SM_SWAPBUTTON) ? MK_RBUTTON : MK_LBUTTON;
+		WORD rightButton = leftButton == MK_LBUTTON ? MK_RBUTTON : MK_LBUTTON;
+
+		WORD keyState = NULL;
+		keyState = GetAsyncKeyState(VK_CONTROL) ? MK_CONTROL : NULL;
+		keyState = GetAsyncKeyState(VK_SHIFT) ? MK_SHIFT : NULL;
+		keyState = GetAsyncKeyState(VK_LBUTTON) ? leftButton : NULL;
+		keyState = GetAsyncKeyState(VK_RBUTTON) ? rightButton : NULL;
+		keyState = GetAsyncKeyState(VK_MBUTTON) ? MK_MBUTTON : NULL;
+		keyState = GetAsyncKeyState(VK_XBUTTON1) ? MK_XBUTTON1 : NULL;
+		keyState = GetAsyncKeyState(VK_XBUTTON2) ? MK_XBUTTON2 : NULL;
+
+		auto [modKeys, mouseButtons] = parseMouseKeyState(keyState);
+
+		ComponentEvent::Mouse::Hover e = {};
+
+		Point mouseScreenPoint = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+
+		e.point = mouseScreenPoint - anchorPoint;
+		e.modificationKeys = modKeys;
+		e.pressedMouseButtons = mouseButtons;
+
+		static_cast<ComponentEvent::Handler&>(windowController).handleEvent(e);
 		return 0;
 	}
 
