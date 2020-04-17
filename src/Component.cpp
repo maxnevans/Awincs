@@ -176,9 +176,9 @@ namespace Awincs
 			return true;
 
 		/* Hover on same component */
-		bool isTheSameComponent = &**childHandler == &**hoveredChildPrev;
+		bool isTheSameComponent = childHandler.get() == hoveredChildPrev.get();
 		if (bothPresent && isTheSameComponent)
-			return (*childHandler)->handleEvent(adaptMouseEventToHandler(e, *childHandler));
+			return childHandler->handleEvent(adaptMouseEventToHandler(e, childHandler));
 
 		/* Hovered child changed */
 
@@ -186,10 +186,10 @@ namespace Awincs
 		if (bothPresent)
 		{
 			/* Previous child should receive Event::Mouse::HoverEnd */
-			(*hoveredChildPrev)->handleEvent(Event::Mouse::HoverEnd{});
+			hoveredChildPrev->handleEvent(Event::Mouse::HoverEnd{});
 
 			/* New child should receive Event::Mouse::HoverStart */
-			return (*childHandler)->handleEvent(Event::Mouse::HoverStart{ adaptMouseEventToHandler(e, *childHandler) });
+			return childHandler->handleEvent(Event::Mouse::HoverStart{ adaptMouseEventToHandler(e, childHandler) });
 		}
 
 		/* One is present */
@@ -197,13 +197,13 @@ namespace Awincs
 		if (childHandler)
 		{
 			/* New child should receive Event::Mouse::HoverStart */
-			return (*childHandler)->handleEvent(Event::Mouse::HoverStart{ adaptMouseEventToHandler(e, *childHandler) });
+			return childHandler->handleEvent(Event::Mouse::HoverStart{ adaptMouseEventToHandler(e, childHandler) });
 		}
 
 		if (hoveredChildPrev)
 		{
 			/* Previous child should receive Event::Mouse::HoverEnd */
-			(*hoveredChildPrev)->handleEvent(Event::Mouse::HoverEnd{});
+			hoveredChildPrev->handleEvent(Event::Mouse::HoverEnd{});
 			return true;
 		}
 

@@ -82,14 +82,14 @@ namespace Awincs
 	private:
 		template<typename GMouseEvent>
 		// requires std::is_convertable<GMouseEvent, ComponentEvent::MouseEvent>::value_type
-		std::optional<std::shared_ptr<Component>> getMouseEventComponentHandler(const GMouseEvent& e)
+		std::shared_ptr<Component> getMouseEventComponentHandler(const GMouseEvent& e)
 		{
 			if (!children.empty())
 				for (const auto& child : children)
 					if (child->checkAffiliationIgnoreChildren(e.point))
 						return child;
 
-			return std::nullopt;
+			return nullptr;
 		}
 
 		template<typename GMouseEvent>
@@ -99,8 +99,8 @@ namespace Awincs
 			
 			if (handler)
 			{
-				auto eAdapted = adaptMouseEventToHandler(e, *handler);
-				return (*handler)->handleEvent(eAdapted);
+				auto eAdapted = adaptMouseEventToHandler(e, handler);
+				return handler->handleEvent(eAdapted);
 			}
 
 			return true;
@@ -133,7 +133,7 @@ namespace Awincs
 		Point anchorPoint											= DEFAULT_ANCHOR_POINT;
 		Dimensions dimensions										= DEFAULT_DIMENSIONS;
 		bool shouldRedraw											= true;
-		std::optional<std::shared_ptr<Component>> hoveredChild		= std::nullopt;
+		std::shared_ptr<Component> hoveredChild 					= nullptr;
 		RedrawCallback redrawCallback								= nullptr;
 		std::vector<std::shared_ptr<Component>> children;
 		std::weak_ptr<Component> parent;
