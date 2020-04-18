@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Event.h"
+#include "Events.h"
 
 namespace Awincs
 {
-	namespace ComponentEvent
+	namespace Event
 	{
-		class Handler
+		class EventHandler
 		{
 		public:
 			using ShouldParentHandleEvent = bool;

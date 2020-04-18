@@ -20,6 +20,8 @@
 #include <random>
 #include <tuple>
 #include <variant>
+#include <any>
+#include <typeinfo>
 #include <cmath>
 #include <cassert>
 
@@ -28,4 +30,8 @@
 #include <windowsx.h>
 
 /* GDI+ */
+#define min(a, b) std::min(a, b)
+#define max(a, b) std::max(a, b)
 #include <gdiplus.h>
+#undef min
+#undef max

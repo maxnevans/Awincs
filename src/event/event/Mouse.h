@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../CoreEvent.h"
+#include "CoreEvent.h"
 #include "Keyboard.h"
 
 namespace Awincs
 {
-	namespace ComponentEvent
+	namespace Event
 	{
 		namespace Mouse
 		{
@@ -23,6 +23,12 @@ namespace Awincs
 				:
 				public CoreEvent
 			{
+				Event(Geometry::IntPoint2D point = {}, std::set<Keyboard::ModificationKey> modificationKeys = {}, std::set<ButtonType> pressedMouseButtons = {})
+					:
+					point(point),
+					modificationKeys(modificationKeys),
+					pressedMouseButtons(pressedMouseButtons)
+				{}
 				Geometry::IntPoint2D point = {};
 				std::set<Keyboard::ModificationKey> modificationKeys = {};
 				std::set<ButtonType> pressedMouseButtons = {};
@@ -39,6 +45,12 @@ namespace Awincs
 				:
 				public Event
 			{
+				ButtonEvent(ButtonType buttonType = ButtonType::UNKNOWN, ButtonAction action = ButtonAction::UNKNOWN)
+					:
+					Event(),
+					buttonType(buttonType),
+					action(action)
+				{}
 				ButtonType buttonType = ButtonType::UNKNOWN;
 				ButtonAction action = ButtonAction::UNKNOWN;
 			};
@@ -54,13 +66,17 @@ namespace Awincs
 				:
 				public Event
 			{
-
 			};
 
 			struct HoverStart
 				:
 				public Hover
 			{
+				HoverStart() = default;
+				HoverStart(const Hover& hover)
+					:
+					Hover(hover)
+				{}
 			};
 
 			struct HoverEnd
@@ -73,6 +89,12 @@ namespace Awincs
 				:
 				public Event
 			{
+				WheelEvent(ScrollDirection direction = ScrollDirection::UNKNOWN, int amountScrolled = 0)
+					:
+					Event(),
+					direction(direction),
+					amountScrolled(amountScrolled)
+				{}
 				ScrollDirection direction = ScrollDirection::UNKNOWN;
 				int amountScrolled = 0;
 			};

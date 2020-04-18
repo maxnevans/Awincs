@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../CoreEvent.h"
+#include "CoreEvent.h"
 
 namespace Awincs
 {
-	namespace ComponentEvent
+	namespace Event
 	{
 		namespace Keyboard
 		{
@@ -31,6 +31,12 @@ namespace Awincs
 				:
 				public Event
 			{
+				KeyEvent(KeyEventAction action = KeyEventAction::UNKNOWN, int keyCode = 0)
+					:
+					Event(),
+					action(action),
+					keyCode(keyCode)
+				{}
 				KeyEventAction action = KeyEventAction::UNKNOWN;
 				int keyCode = 0;
 			};
@@ -39,6 +45,11 @@ namespace Awincs
 				:
 				public Event
 			{
+				InputEvent(wchar_t character = L'\0')
+					:
+					Event(),
+					character(character)
+				{}
 				wchar_t character = L'\0';
 			};
 		}

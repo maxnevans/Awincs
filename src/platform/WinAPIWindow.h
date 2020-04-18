@@ -4,7 +4,7 @@
 
 #include "Geometry.h"
 #include "WindowController.h"
-#include "event/Event.h"
+#include "event/Events.h"
 
 namespace Awincs
 {
@@ -89,7 +89,7 @@ namespace Awincs
 		LRESULT wmMButtonDown(WPARAM wParam, LPARAM lParam);
 		LRESULT wmXButtonUp(WPARAM wParam, LPARAM lParam);
 		LRESULT wmXButtonDown(WPARAM wParam, LPARAM lParam);
-		LRESULT wmMouseButton(WPARAM wParam, LPARAM lParam, ComponentEvent::Mouse::ButtonType mbt, ComponentEvent::Mouse::ButtonAction mba);
+		LRESULT wmMouseButton(WPARAM wParam, LPARAM lParam, Event::Mouse::ButtonType mbt, Event::Mouse::ButtonAction mba);
 		LRESULT wmMouseWheel(WPARAM wParam, LPARAM lParam);
 		LRESULT wmMouseMove(WPARAM wParam, LPARAM lParam);
 		LRESULT wmMouseActivate(WPARAM wParam, LPARAM lParam);
@@ -123,7 +123,7 @@ namespace Awincs
 		LRESULT wmNCPaint(WPARAM wParam, LPARAM lParam);
 		LRESULT wmNCUAHDrawFrameAndCaption(WPARAM wParam, LPARAM lParam);
 
-		std::pair<std::set<ComponentEvent::Keyboard::ModificationKey>, std::set<ComponentEvent::Mouse::ButtonType>> parseMouseKeyState(WORD keyState);
+		std::pair<std::set<Event::Keyboard::ModificationKey>, std::set<Event::Mouse::ButtonType>> parseMouseKeyState(WORD keyState);
 		void p_move(const Point& ap);
 		void p_smartMove(const Point& prevAp, const Point& ap);
 		void p_resize(const Dimensions& d);

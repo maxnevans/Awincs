@@ -46,7 +46,7 @@ namespace Awincs
 		return point - anchorPoint;
 	}
 
-	void Component::setParent(const std::shared_ptr<Component>& parent)
+	void Component::setParent(std::shared_ptr<Component> parent)
 	{
 		/* To avoid recursive call for redraw */
 		redrawCallback = parent->redrawCallback;
@@ -89,30 +89,36 @@ namespace Awincs
 		return false;
 	}
 
+	bool Component::checkMousePoint(const Point& mousePoint) const
+	{
+		auto localMousePoint = mousePoint - getGlobalAnchorPoint();
+		return checkAffiliationIgnoreChildren(localMousePoint);
+	}
+
 	void Component::closeWindow()
 	{
-		auto parent = getParent().lock();
-		expect(parent);
-		parent->closeWindow();
+		auto p = parent.lock();
+		expect(p);
+		p->closeWindow();
 	}
 
 	void Component::minimizeWindow()
 	{
-		auto parent = getParent().lock();
-		expect(parent);
-		parent->minimizeWindow();
+		auto p = parent.lock();
+		expect(p);
+		p->minimizeWindow();
 	}
 
 	void Component::maximizeWindow()
 	{
-		auto parent = getParent().lock();
-		expect(parent);
-		parent->maximizeWindow();
+		auto p = parent.lock();
+		expect(p);
+		p->maximizeWindow();
 	}	
 
-	std::weak_ptr<Component> Component::getParent()
+	const std::shared_ptr<Component>& Component::getParent() const
 	{
-		return parent;
+		return parent.lock();
 	}
 
 	void Component::addChild(const std::shared_ptr<Component>& child)

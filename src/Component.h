@@ -3,15 +3,14 @@
 #include "pch.h"
 
 #include "Geometry.h"
-#include "event/Handler.h"
-#include "event/Event.h"
+#include "event/EventHandlers.h"
+#include "event/Events.h"
 #include "WindowStateHandler.h"
 
 namespace Awincs
 {
 	namespace
 	{
-		namespace Event = ComponentEvent;
 		namespace gp = Gdiplus;
 
 		static constexpr const int makeARGB(int a, int r, int g, int b)
@@ -30,13 +29,15 @@ namespace Awincs
 	class Component
 		:
 		public std::enable_shared_from_this<Component>,
-		public ComponentEvent::Handler,
+		public Event::MouseEventHandler<Component>,
+		public Event::KeyboardEventHandler<Component>,
+		public Event::DefaultEventHandler<Component>,
 		public WindowStateHandler
 	{
 	public:
 		using Point = Geometry::IntPoint2D;
 		using Dimensions = Geometry::IntDimensions2D;
-		using ShouldParentHandleEvent	= Event::Handler::ShouldParentHandleEvent;
+		using ShouldParentHandleEvent	= Event::EventHandler::ShouldParentHandleEvent;
 		using RedrawCallback = std::function<void()>;
 
 	public:
@@ -48,11 +49,13 @@ namespace Awincs
 		Point getAnchorPoint() const;
 		Point getGlobalAnchorPoint() const;
 		Point transformToLocalPoint(const Point& point) const;
-		virtual void setParent(const std::shared_ptr<Component>& parent);
-		virtual void unsetParent();
+		virtual const std::shared_ptr<Component>& getParent() const override;
+		virtual void setParent(std::shared_ptr<Component> parent) override;
+		virtual void unsetParent() override;
 		virtual void redraw();
 		virtual bool checkAffiliationIgnoreChildren(const Point& pt) const;
 		virtual bool checkAffiliationDontIgnoreChildren(const Point&) const;
+		virtual bool checkMousePoint(const Point&) const;
 		virtual void closeWindow() override;
 		virtual void minimizeWindow() override;
 		virtual void maximizeWindow() override;
@@ -72,7 +75,6 @@ namespace Awincs
 
 	protected:
 		virtual void draw(gp::Graphics&) const {}
-		std::weak_ptr<Component> getParent();
 		virtual void addChild(const std::shared_ptr<Component>& child);
 		virtual void removeChild(const std::shared_ptr<Component>& child);
 		virtual void p_draw(gp::Graphics& gfx);

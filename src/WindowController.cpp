@@ -3,15 +3,22 @@
 
 #include <DebugConsole.h>
 
-#include "WindowControllerException.h"
+#include "event/dispatcher/MouseEventDispatcher.h"
+#include "event/dispatcher/KeyboardEventDispatcher.h"
+#include "event/dispatcher/DefaultEventDispatcher.h"
 
 namespace Awincs
 {
 	WindowController::WindowController(const Point& anchorPoint, const Dimensions& dims)
 		:
 		Component({0, 0}, dims),
+		eventManager(shared_from_this()),
 		window(std::make_unique<WinAPIWindow>(*this, anchorPoint, dims))
 	{
+		eventManager.registerDispatcher<Event::MouseEventDispatcher<Component>>();
+		eventManager.registerDispatcher<Event::KeyboardEventDispatcher<Component>>();
+		eventManager.registerDispatcher<Event::DefaultEventDispatcher<Component>>();
+
 		p_setupDrawCallback(*window);
 		p_setRedrawCallback([this] { p_redraw(); });
 		window->create();
@@ -98,27 +105,32 @@ namespace Awincs
 		window->maximize();
 	}
 
-	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::MoveEvent& e)
+	Event::EventManager<Component>& WindowController::getEventManager()
+	{
+		return eventManager;
+	}
+
+	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const Event::Window::MoveEvent& e)
 	{
 		return p_handleWindowEvent(e);
 	}
 
-	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::ResizeEvent& e)
+	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const Event::Window::ResizeEvent& e)
 	{
 		return p_handleWindowEvent(e);
 	}
 
-	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::MinimizeEvent& e)
+	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const Event::Window::MinimizeEvent& e)
 	{
 		return p_handleWindowEvent(e);
 	}
 
-	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::MaximizeEvent& e)
+	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const Event::Window::MaximizeEvent& e)
 	{
 		return p_handleWindowEvent(e);
 	}
 
-	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::RestoreEvent& e)
+	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const Event::Window::RestoreEvent& e)
 	{
 		return p_handleWindowEvent(e);
 	}

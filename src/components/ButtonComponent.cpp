@@ -47,7 +47,7 @@ namespace Awincs
 		return Geometry::IntRectangle::checkAffiliationIgnoreChildren(getAnchorPoint(), getDimensions(), pt);
 	}
 
-	bool ButtonComponent::handleEvent(const ComponentEvent::Mouse::ButtonEvent& e)
+	bool ButtonComponent::handleEvent(const Event::Mouse::ButtonEvent& e)
 	{
 		bool shouldHandle = Component::handleEvent(e);
 		expect(shouldHandle);

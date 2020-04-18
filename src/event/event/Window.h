@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../CoreEvent.h"
+#include "CoreEvent.h"
 
 namespace Awincs
 {
-	namespace ComponentEvent
+	namespace Event
 	{
 		namespace Window
 		{

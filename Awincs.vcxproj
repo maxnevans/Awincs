@@ -96,7 +96,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -116,7 +116,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -138,7 +138,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -162,7 +162,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -232,22 +232,35 @@
   <ItemGroup>
     <ClInclude Include="include\AWC.h" />
     <ClInclude Include="include\Awincs.h" />
+    <ClInclude Include="src\event\dispatcher\DefaultEventDispatcher.h" />
+    <ClInclude Include="src\event\dispatcher\DefaultEventHandler.h" />
+    <ClInclude Include="src\event\dispatcher\KeyboardEventDispatcher.h" />
+    <ClInclude Include="src\event\dispatcher\KeyboardEventHandler.h" />
+    <ClInclude Include="src\event\EventHandlers.h" />
+    <ClInclude Include="src\HierarchalIterator.h" />
     <ClInclude Include="src\Core.h" />
     <ClInclude Include="src\components\ButtonComponent.h" />
     <ClInclude Include="src\components\CloseButtonComponent.h" />
     <ClInclude Include="src\Component.h" />
+    <ClInclude Include="src\Drawable.h" />
+    <ClInclude Include="src\event\dispatcher\EventDispatcher.h" />
+    <ClInclude Include="src\event\EventManager.h" />
+    <ClInclude Include="src\event\HierarchalEventHandler.h" />
+    <ClInclude Include="src\event\dispatcher\MouseEventDispatcher.h" />
+    <ClInclude Include="src\event\dispatcher\MouseEventHandler.h" />
     <ClInclude Include="src\Exception.h" />
     <ClInclude Include="src\components\InputComponent.h" />
     <ClInclude Include="src\components\PanelComponent.h" />
-    <ClInclude Include="src\event\Event.h" />
-    <ClInclude Include="src\event\Handler.h" />
-    <ClInclude Include="src\event\system\Keyboard.h" />
-    <ClInclude Include="src\event\system\Mouse.h" />
-    <ClInclude Include="src\event\system\Window.h" />
+    <ClInclude Include="src\event\Events.h" />
+    <ClInclude Include="src\event\EventHandler.h" />
+    <ClInclude Include="src\event\event\Keyboard.h" />
+    <ClInclude Include="src\event\event\Mouse.h" />
+    <ClInclude Include="src\event\event\Window.h" />
     <ClInclude Include="src\Geometry.h" />
+    <ClInclude Include="src\Hierarchal.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\platform\WinAPIWindow.h" />
-    <ClInclude Include="src\event\CoreEvent.h" />
+    <ClInclude Include="src\event\event\CoreEvent.h" />
     <ClInclude Include="src\WindowController.h" />
     <ClInclude Include="src\WindowControllerException.h" />
     <ClInclude Include="src\WindowException.h" />

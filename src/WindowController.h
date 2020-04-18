@@ -4,6 +4,7 @@
 
 #include "platform/WinAPIWindow.h"
 #include "Component.h"
+#include "event/EventManager.h"
 
 namespace Awincs
 {
@@ -42,12 +43,13 @@ namespace Awincs
 		virtual void closeWindow() override;
 		virtual void minimizeWindow() override;
 		virtual void maximizeWindow() override;
+		virtual Event::EventManager<Component>& getEventManager();
 		
-		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::MoveEvent&) override;
-		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::ResizeEvent&) override;
-		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::MinimizeEvent&) override;
-		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::MaximizeEvent&) override;
-		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::RestoreEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Window::MoveEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Window::ResizeEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Window::MinimizeEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Window::MaximizeEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const Event::Window::RestoreEvent&) override;
 
 	protected:
 		virtual void draw(Gdiplus::Graphics&) const override;
@@ -70,5 +72,6 @@ namespace Awincs
 		gp::ARGB backgroundColor = DEFAULT_BACKGROUND_COLOR;
 		std::unique_ptr<WinAPIWindow> window;
 		CaptureCallback moveCapture;
+		Event::EventManager<Component> eventManager;
 	};
 }
