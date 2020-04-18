@@ -27,11 +27,11 @@ namespace Awincs
 		void setDimensions(const Dimensions& dims);
 		void setMaxDimensions(const Dimensions& dims);
 		void setMinDimensions(const Dimensions& dims);
-		const Dimensions& getDimensions() const;
+		virtual const Dimensions& getDimensions() const override;
 		const Dimensions& getMaxDimensions() const;
 		const Dimensions& getMinDimensions() const;
 		void setAnchorPoint(const Point&);
-		const Point& getAnchorPoint() const;
+		virtual const Point& getAnchorPoint() const override;
 		void show();
 		void hide();
 		void redraw();

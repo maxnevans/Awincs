@@ -16,7 +16,7 @@ namespace Awincs
 		p_setRedrawCallback([this] { p_redraw(); });
 		window->create();
 
-		Component::focusedComponent = &this->focusedComponent;
+		p_setFocusComponentValue(&this->focusedComponent);
 	}
 
 	void WindowController::setTitle(const std::wstring& title)

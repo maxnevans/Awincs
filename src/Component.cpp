@@ -11,39 +11,77 @@ namespace Awincs
 		this->dimensions = dims;
 	}
 
-	void Component::setDimensions(const Component::Dimensions& dims)
+	void Component::setDimensions(const Dimensions& dims)
 	{
-		this->dimensions = dims;
+		p_setDimensions(dims);
 	}
 
-	Component::Dimensions Component::getDimensions() const
+	const Component::Dimensions& Component::getDimensions() const
 	{
-		return this->dimensions;
+		return p_getDimensions();
 	}
 
-	void Component::setAnchorPoint(const Component::Point& point)
+	void Component::setAnchorPoint(const Point& point)
 	{
-		this->anchorPoint = point;
+		p_setAnchorPoint(point);
 	}
 
-	Component::Point Component::getAnchorPoint() const
+	const Component::Point& Component::getAnchorPoint() const
 	{
-		return this->anchorPoint;
+		return p_getAnchorPoint();
 	}
 
 	Component::Point Component::getGlobalAnchorPoint() const
 	{
-		auto gPoint = anchorPoint;
-
-		if (auto prnt = parent.lock())
-			gPoint += parent.lock()->getGlobalAnchorPoint();
-
-		return gPoint;
+		return p_getGlobalAnchorPoint();
 	}
 
 	Component::Point Component::transformToLocalPoint(const Point& point) const
 	{
+		return p_transformToLocalPoint(point);
+	}
+
+	void Component::p_setDimensions(const Component::Dimensions& dims)
+	{
+		this->dimensions = dims;
+	}
+
+	const Component::Dimensions& Component::p_getDimensions() const
+	{
+		return this->dimensions;
+	}
+
+	void Component::p_setAnchorPoint(const Component::Point& point)
+	{
+		this->anchorPoint = point;
+	}
+
+	const Component::Point& Component::p_getAnchorPoint() const
+	{
+		return this->anchorPoint;
+	}
+
+	Component::Point Component::p_getGlobalAnchorPoint() const
+	{
+		auto gPoint = anchorPoint;
+
+		if (auto prnt = parent.lock())
+			gPoint += parent.lock()->p_getGlobalAnchorPoint();
+
+		return gPoint;
+	}
+
+	Component::Point Component::p_transformToLocalPoint(const Point& point) const
+	{
 		return point - anchorPoint;
+	}
+
+	bool Component::p_isFocused() const
+	{
+		if (focusedComponent && *focusedComponent)
+			return (*focusedComponent).get() == this;
+
+		return false;
 	}
 
 	std::shared_ptr<Component> Component::getFocusedComponent() const
@@ -53,9 +91,12 @@ namespace Awincs
 
 	void Component::setFocusOnThisComponent()
 	{
-		expect(focusedComponent);
+		p_setFocusOnThisComponent();
+	}
 
-		*focusedComponent = shared_from_this();
+	void Component::unsetFocusOnThisComponent()
+	{
+		p_unsetFocusFromThisComponent();
 	}
 
 	void Component::setParent(const std::shared_ptr<Component>& parent)
@@ -96,7 +137,7 @@ namespace Awincs
 		if (checkAffiliationIgnoreChildren(p))
 		{
 			for (const auto& child : children)
-				if (child->checkAffiliationIgnoreChildren(transformToLocalPoint(p)))
+				if (child->checkAffiliationIgnoreChildren(p_transformToLocalPoint(p)))
 					return false;
 
 			return true;
@@ -124,7 +165,21 @@ namespace Awincs
 		auto parent = getParent().lock();
 		expect(parent);
 		parent->maximizeWindow();
-	}	
+	}
+	bool Component::isFocused() const
+	{
+		return p_isFocused();
+	}
+	gp::PointF Component::p_transformToGlobal(const gp::PointF& p) const
+	{
+		auto [x, y] = p_getGlobalAnchorPoint();
+		return gp::PointF{ x + p.X, y + p.Y };
+	}
+
+	Component::Point Component::p_transformToGlobal(const Point& p) const
+	{
+		return p_getGlobalAnchorPoint() + p;
+	}
 
 	std::weak_ptr<Component> Component::getParent()
 	{
@@ -169,8 +224,46 @@ namespace Awincs
 		redrawCallback = cb;
 	}
 
+	void Component::p_setFocusOnThisComponent()
+	{
+		expect(focusedComponent);
+
+		*focusedComponent = shared_from_this();
+	}
+
+	void Component::p_unsetFocusFromThisComponent()
+	{
+		expect(focusedComponent);
+		*focusedComponent = nullptr;
+	}
+
+	void Component::p_setFocusComponentValue(std::shared_ptr<Component>* pComponent)
+	{
+		focusedComponent = pComponent;
+	}
+
+	ComponentState Component::p_getState() const
+	{
+		return state;
+	}
+
+	void Component::p_setState(ComponentState state)
+	{
+		this->state = state;
+	}
+
 	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Mouse::ButtonEvent& e)
 	{
+		if (e.action == Event::Mouse::ButtonAction::DOWN)
+		{
+			state = ComponentState::ACTIVE;
+			p_setFocusOnThisComponent();
+		}
+		else if (e.action == Event::Mouse::ButtonAction::UP)
+		{
+			state = ComponentState::HOVER;
+		}
+
 		return handleMouseEvent(e);
 	}
 	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Mouse::WheelEvent& e)
@@ -229,15 +322,19 @@ namespace Awincs
 	}
 	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Mouse::HoverStart& e)
 	{
+		state = ComponentState::HOVER;
 		return handleMouseEvent(e);
 	}
 	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Mouse::HoverEnd& e)
 	{
+		state = ComponentState::DEFAULT;
 		return handleMouseEvent(e);
 	}
-	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Keyboard::KeyEvent&)
+	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Keyboard::KeyEvent& e)
 	{
-		/* Do nothing if this component is focused and got not keyboard event handler setup. */
+		if (e.action == Event::Keyboard::KeyEventAction::DOWN && e.keyCode == VK_ESCAPE)
+			p_unsetFocusFromThisComponent();
+
 		return true;
 	}
 	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Keyboard::InputEvent&)

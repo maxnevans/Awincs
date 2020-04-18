@@ -25,7 +25,22 @@ namespace Awincs
 		{
 			return makeARGB(0xff, r, g, b);
 		}
+		static constexpr const int setARGBOpacity(int a, gp::ARGB color)
+		{
+			return color & ~(0xff << gp::Color::AlphaShift) & ((gp::ARGB)(a) << gp::Color::AlphaShift);
+		}
+		static constexpr const int getARGBOpacity(gp::ARGB color)
+		{
+			return (color & (0xff << gp::Color::AlphaShift)) >> gp::Color::AlphaShift;
+		}
 	}
+
+	enum class ComponentState
+	{
+		DEFAULT,
+		HOVER,
+		ACTIVE
+	};
 
 	class Component
 		:
@@ -42,14 +57,15 @@ namespace Awincs
 	public:
 		Component() = default;
 		Component(const Point& anchorPoint, const Dimensions& dims);
-		void setDimensions(const Dimensions& dims);
-		Dimensions getDimensions() const;
-		void setAnchorPoint(const Point& point);
-		Point getAnchorPoint() const;
+		virtual void setDimensions(const Dimensions& dims);
+		virtual const Dimensions& getDimensions() const;
+		virtual void setAnchorPoint(const Point& point);
+		virtual const Point& getAnchorPoint() const;
 		Point getGlobalAnchorPoint() const;
 		Point transformToLocalPoint(const Point& point) const;
 		virtual std::shared_ptr<Component> getFocusedComponent() const;
 		virtual void setFocusOnThisComponent();
+		virtual void unsetFocusOnThisComponent();
 		virtual void setParent(const std::shared_ptr<Component>& parent);
 		virtual void unsetParent();
 		virtual void redraw();
@@ -58,6 +74,7 @@ namespace Awincs
 		virtual void closeWindow() override;
 		virtual void minimizeWindow() override;
 		virtual void maximizeWindow() override;
+		virtual bool isFocused() const;
 		virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::ButtonEvent&) override;
 		virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::WheelEvent&) override;
 		virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::Hover&) override;
@@ -73,12 +90,26 @@ namespace Awincs
 		virtual ShouldParentHandleEvent handleEvent(const Event::Window::RestoreEvent&) override;
 
 	protected:
+		virtual gp::PointF p_transformToGlobal(const gp::PointF& p) const;
+		virtual Point p_transformToGlobal(const Point& p) const;
 		virtual void draw(gp::Graphics&) const {}
 		std::weak_ptr<Component> getParent();
 		virtual void addChild(const std::shared_ptr<Component>& child);
 		virtual void removeChild(const std::shared_ptr<Component>& child);
 		virtual void p_draw(gp::Graphics& gfx);
 		void p_setRedrawCallback(RedrawCallback cb);
+		void p_setFocusOnThisComponent();
+		void p_unsetFocusFromThisComponent();
+		void p_setFocusComponentValue(std::shared_ptr<Component>*);
+		ComponentState p_getState() const;
+		void p_setState(ComponentState state);
+		virtual void p_setDimensions(const Dimensions& dims);
+		virtual const Dimensions& p_getDimensions() const;
+		virtual void p_setAnchorPoint(const Point& point);
+		virtual const Point& p_getAnchorPoint() const;
+		Point p_getGlobalAnchorPoint() const;
+		Point p_transformToLocalPoint(const Point& point) const;
+		bool p_isFocused() const;
 
 
 	private:
@@ -125,11 +156,11 @@ namespace Awincs
 		GMouseEvent adaptMouseEventToHandler(const GMouseEvent& e, std::shared_ptr<Component>& handler)
 		{
 			auto eAdapted = e;
-			eAdapted.point = handler->transformToLocalPoint(e.point);
+			eAdapted.point = handler->p_transformToLocalPoint(e.point);
 			return eAdapted;
 		}
 
-	protected:
+	private:
 		static constexpr Point DEFAULT_ANCHOR_POINT					= { 0, 0 };
 		static constexpr Dimensions DEFAULT_DIMENSIONS				= { 0, 0 };
 
@@ -139,6 +170,7 @@ namespace Awincs
 		std::shared_ptr<Component> hoveredChild 					= nullptr;
 		RedrawCallback redrawCallback								= nullptr;
 		std::shared_ptr<Component>* focusedComponent                = nullptr;
+		ComponentState state										= ComponentState::DEFAULT;
 		std::vector<std::shared_ptr<Component>> children;
 		std::weak_ptr<Component> parent;
 	};
