@@ -48,6 +48,8 @@ namespace Awincs
 		Point getAnchorPoint() const;
 		Point getGlobalAnchorPoint() const;
 		Point transformToLocalPoint(const Point& point) const;
+		virtual std::shared_ptr<Component> getFocusedComponent() const;
+		virtual void setFocusOnThisComponent();
 		virtual void setParent(const std::shared_ptr<Component>& parent);
 		virtual void unsetParent();
 		virtual void redraw();
@@ -81,7 +83,7 @@ namespace Awincs
 
 	private:
 		template<typename GMouseEvent>
-		// requires std::is_convertable<GMouseEvent, ComponentEvent::MouseEvent>::value_type
+		// requires std::is_convertable<GMouseEvent, Event::Mouse::Event>::value_type
 		std::shared_ptr<Component> getMouseEventComponentHandler(const GMouseEvent& e)
 		{
 			if (!children.empty())
@@ -93,6 +95,7 @@ namespace Awincs
 		}
 
 		template<typename GMouseEvent>
+		// requires std::is_convertable<GMouseEvent, ComponentEvent::MouseEvent>::value_type
 		ShouldParentHandleEvent handleMouseEvent(const GMouseEvent& e)
 		{
 			auto handler = getMouseEventComponentHandler(e);
@@ -106,9 +109,9 @@ namespace Awincs
 			return true;
 		}
 
-		template<typename GNonMouseEvent>
-		// requires std::is_convertable<GNonMouseEvent, ComponentEvent::CoreEvent>::value_type
-		ShouldParentHandleEvent handleNonMouseEvent(const GNonMouseEvent& e)
+		template<typename GWindowEvent>
+		// requires std::is_convertable<GWindowEvent, Event::Window::Event>::value_type
+		ShouldParentHandleEvent handleWindowEvent(const GWindowEvent& e)
 		{
 			bool shouldComponentHandleEvent = true;
 
@@ -126,7 +129,7 @@ namespace Awincs
 			return eAdapted;
 		}
 
-	private:
+	protected:
 		static constexpr Point DEFAULT_ANCHOR_POINT					= { 0, 0 };
 		static constexpr Dimensions DEFAULT_DIMENSIONS				= { 0, 0 };
 
@@ -135,6 +138,7 @@ namespace Awincs
 		bool shouldRedraw											= true;
 		std::shared_ptr<Component> hoveredChild 					= nullptr;
 		RedrawCallback redrawCallback								= nullptr;
+		std::shared_ptr<Component>* focusedComponent                = nullptr;
 		std::vector<std::shared_ptr<Component>> children;
 		std::weak_ptr<Component> parent;
 	};

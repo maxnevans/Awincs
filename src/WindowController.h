@@ -42,7 +42,10 @@ namespace Awincs
 		virtual void closeWindow() override;
 		virtual void minimizeWindow() override;
 		virtual void maximizeWindow() override;
+		virtual void setFocusOnThisComponent();
 		
+		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Keyboard::InputEvent&) override;
+		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Keyboard::KeyEvent&) override;
 		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::MoveEvent&) override;
 		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::ResizeEvent&) override;
 		virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Window::MinimizeEvent&) override;
@@ -64,11 +67,23 @@ namespace Awincs
 			return true;
 		}
 
+		template<typename GKeyboardEvent>
+		// requires std::is_convertable<GKeyboardEvent, Event::Keyboard::Event>::value_type
+		ShouldParentHandleEvent handleKeyboardEvent(const GKeyboardEvent& e)
+		{
+			bool shouldParentHandleEvent = true;
+			if (focusedComponent)
+				shouldParentHandleEvent = focusedComponent->handleEvent(e) && shouldParentHandleEvent;
+
+			return shouldParentHandleEvent;
+		}
+
 	private:
 		static constexpr gp::ARGB DEFAULT_BACKGROUND_COLOR = 0xff005cc5;
 
 		gp::ARGB backgroundColor = DEFAULT_BACKGROUND_COLOR;
 		std::unique_ptr<WinAPIWindow> window;
 		CaptureCallback moveCapture;
+		std::shared_ptr<Component> focusedComponent = nullptr;
 	};
 }

@@ -15,6 +15,8 @@ namespace Awincs
 		p_setupDrawCallback(*window);
 		p_setRedrawCallback([this] { p_redraw(); });
 		window->create();
+
+		Component::focusedComponent = &this->focusedComponent;
 	}
 
 	void WindowController::setTitle(const std::wstring& title)
@@ -96,6 +98,25 @@ namespace Awincs
 	void WindowController::maximizeWindow()
 	{
 		window->maximize();
+	}
+
+	void WindowController::setFocusOnThisComponent()
+	{
+		/* You can not make window component as focused!
+		   Window dispatches keyboard events to focused component.
+		   This will create stack overflow. See WindowController::handleKeyboardEvent
+		   for details. */
+		expect(false);
+	}
+
+	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Keyboard::InputEvent& e)
+	{
+		return handleKeyboardEvent(e);
+	}
+
+	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Keyboard::KeyEvent& e)
+	{
+		return handleKeyboardEvent(e);
 	}
 
 	WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Window::MoveEvent& e)
