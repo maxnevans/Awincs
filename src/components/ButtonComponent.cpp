@@ -7,50 +7,46 @@
 
 namespace Awincs
 {
-	void ButtonComponent::draw(gp::Graphics& gfx) const
+	ButtonComponent::ButtonComponent()
+		:
+		PanelComponent()
 	{
-		auto [width, height] = getDimensions();
-		auto [x, y] = getGlobalAnchorPoint();
-		gfx.FillRectangle(&gp::SolidBrush{ gp::Color{backgroundColors.at(state)} }, gp::Rect{ x, y, width, height });
-		gfx.DrawString(title.c_str(), static_cast<INT>(title.size()), 
-			&gp::Font{ DEFAULT_TITLE_FONT_FAMILY, DEFAULT_TITLE_SIZE, 0, Gdiplus::UnitPixel }, 
-			gp::PointF{ static_cast<gp::REAL>(x), static_cast<gp::REAL>(y) },
-			&gp::SolidBrush(gp::Color{ titleColors.at(state) }));
+		p_showText();
+		p_setTextAlignment(DEFAULT_HORIZONTAL_ALIGNMENT, DEFAULT_VERTICAL_ALIGNMENT);
 	}
 
-	void ButtonComponent::setBackgroundColor(gp::ARGB color, ComponentState state)
+	void ButtonComponent::setDimensions(const Dimensions& d)
 	{
-		backgroundColors[state] = color;
+		PanelComponent::p_setDimensions(d);
+
+		auto [horizontal, vertical] = p_getTextAlignment();
+
+		Point point = p_getTextAnchorPoint();
+
+		if (horizontal == gp::StringAlignment::StringAlignmentCenter)
+			point.x = d.width / 2;
+
+		if (vertical == gp::StringAlignment::StringAlignmentCenter)
+			point.y = d.height / 2;
+
+		p_setTextAnchorPoint(point);
 	}
 
-	void ButtonComponent::setTitleColor(gp::ARGB color, ComponentState state)
+	void ButtonComponent::onClick(OnClickCallback cb)
 	{
-		titleColors[state] = color;
-	}
-
-	void ButtonComponent::setTitle(const std::wstring& title)
-	{
-		this->title = title;
-	}
-
-	std::wstring ButtonComponent::getTitle() const
-	{
-		return title;
-	}
-
-	void ButtonComponent::onClick(std::function<void()>)
-	{
-	}
-
-	bool ButtonComponent::checkAffiliationIgnoreChildren(const Point& pt) const
-	{
-		return Geometry::IntRectangle::checkAffiliationIgnoreChildren(getAnchorPoint(), getDimensions(), pt);
+		onClickCallback = cb;
 	}
 
 	bool ButtonComponent::handleEvent(const ComponentEvent::Mouse::ButtonEvent& e)
 	{
 		bool shouldHandle = Component::handleEvent(e);
 		expect(shouldHandle);
+
+		if (e.buttonType == Event::Mouse::ButtonType::LEFT && e.action == Event::Mouse::ButtonAction::DOWN)
+		{
+			if (onClickCallback)
+				onClickCallback(e.point);
+		}
 
 		DCONSOLE(L"Button component event handling: coordinates(" << e.point.x << L"," << e.point.y << L")\n");
 
@@ -72,8 +68,6 @@ namespace Awincs
 		auto shouldHandle = Component::handleEvent(e);
 		expect(shouldHandle);
 
-		state = ComponentState::HOVER;
-
 		Component::redraw();
 
 		DCONSOLE(L"ButtonComponent: HoverStart\n");
@@ -84,8 +78,6 @@ namespace Awincs
 	{
 		auto shouldHandle = Component::handleEvent(e);
 		expect(shouldHandle);
-
-		state = ComponentState::DEFAULT;
 
 		Component::redraw();
 
