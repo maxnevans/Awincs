@@ -257,7 +257,6 @@ namespace Awincs
 		if (e.action == Event::Mouse::ButtonAction::DOWN)
 		{
 			state = ComponentState::ACTIVE;
-			p_setFocusOnThisComponent();
 		}
 		else if (e.action == Event::Mouse::ButtonAction::UP)
 		{
@@ -266,13 +265,15 @@ namespace Awincs
 
 		return handleMouseEvent(e);
 	}
+
 	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Mouse::WheelEvent& e)
 	{
 		return handleMouseEvent(e);
 	}
-	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Mouse::Hover& e)
+	Component::ShouldParentHandleEvent Component::handleEvent(const Event::Mouse::Hover& event)
 	{
-		auto childHandler = getMouseEventComponentHandler(e);
+		auto e = event;
+		auto childHandler = getMouseEventComponentHandler(shared_from_this(), e);
 		bool bothPresent = childHandler && hoveredChild;
 		bool bothDoesNotPresent = !childHandler && !hoveredChild;
 

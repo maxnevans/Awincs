@@ -115,12 +115,16 @@ namespace Awincs
 	private:
 		template<typename GMouseEvent>
 		// requires std::is_convertable<GMouseEvent, Event::Mouse::Event>::value_type
-		std::shared_ptr<Component> getMouseEventComponentHandler(const GMouseEvent& e)
+		std::shared_ptr<Component> getMouseEventComponentHandler(const std::shared_ptr<Component>& root, GMouseEvent& e) const
 		{
-			if (!children.empty())
-				for (const auto& child : children)
+			if (!root->children.empty())
+				for (const auto& child : root->children)
 					if (child->checkAffiliationIgnoreChildren(e.point))
-						return child;
+					{
+						adaptMouseEventToHandler(e, child);
+						auto handler = getMouseEventComponentHandler(child, e);
+						return handler ? handler : child;
+					}
 
 			return nullptr;
 		}
@@ -129,13 +133,11 @@ namespace Awincs
 		// requires std::is_convertable<GMouseEvent, ComponentEvent::MouseEvent>::value_type
 		ShouldParentHandleEvent handleMouseEvent(const GMouseEvent& e)
 		{
-			auto handler = getMouseEventComponentHandler(e);
+			auto eAdapted = e;
+			auto handler = getMouseEventComponentHandler(shared_from_this(), eAdapted);
 			
 			if (handler)
-			{
-				auto eAdapted = adaptMouseEventToHandler(e, handler);
 				return handler->handleEvent(eAdapted);
-			}
 
 			return true;
 		}
@@ -153,11 +155,10 @@ namespace Awincs
 		}
 
 		template<typename GMouseEvent>
-		GMouseEvent adaptMouseEventToHandler(const GMouseEvent& e, std::shared_ptr<Component>& handler)
+		GMouseEvent adaptMouseEventToHandler(GMouseEvent& e, const std::shared_ptr<Component>& handler) const
 		{
-			auto eAdapted = e;
-			eAdapted.point = handler->p_transformToLocalPoint(e.point);
-			return eAdapted;
+			e.point = handler->p_transformToLocalPoint(e.point);
+			return e;
 		}
 
 	private:

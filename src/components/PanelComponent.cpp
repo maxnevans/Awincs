@@ -124,6 +124,19 @@ namespace Awincs
 		p_setOpacity(opacity);
 	}
 
+	PanelComponent::ShouldParentHandleEvent PanelComponent::handleEvent(const Event::Mouse::ButtonEvent& e)
+	{
+		bool shouldHandleEvent = Component::handleEvent(e);
+		expect(shouldHandleEvent);
+
+		if (e.action == Event::Mouse::ButtonAction::DOWN)
+		{
+			p_setFocusOnThisComponent();
+		}
+
+		return true;
+	}
+
 	void PanelComponent::p_setBold(bool enabled)
 	{
 		if (isItalic)

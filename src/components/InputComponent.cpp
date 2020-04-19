@@ -36,6 +36,8 @@ namespace Awincs
 		bool shouldParentHandle = Component::handleEvent(e);
 		expect(shouldParentHandle);
 
+		setFocusOnThisComponent();
+
 		Component::redraw();
 
 		return true;
@@ -44,7 +46,7 @@ namespace Awincs
 	void InputComponent::draw(gp::Graphics& gfx) const
 	{
 		auto [width, height] = p_getDimensions();
-		auto [x, y] = p_transformToGlobal(p_getAnchorPoint());
+		auto [x, y] = p_transformToGlobal(Point{0,0});
 
 		gfx.FillRectangle(&gp::SolidBrush{ gp::Color{DEFAULT_BACKGROUND_COLOR} }, gp::Rect{ x, y, width, height });
 
