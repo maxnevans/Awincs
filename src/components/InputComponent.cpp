@@ -3,9 +3,19 @@
 
 namespace Awincs
 {
-	void InputComponent::onValueChange(OnValueChangeCallback cb)
+	void InputComponent::onTextChange(OnInputEvent cb)
 	{
-		onValueChangeCallback = cb;
+		onTextChangeCallback = cb;
+	}
+
+	const std::wstring& InputComponent::getText() const
+	{
+		return text;
+	}
+
+	void InputComponent::setText(std::wstring text)
+	{
+		this->text = text;
 	}
 
 	InputComponent::ShouldParentHandleEvent InputComponent::handleEvent(const Event::Keyboard::InputEvent& e)
@@ -23,8 +33,8 @@ namespace Awincs
 			text += e.character;
 		}
 
-		if (onValueChangeCallback)
-			onValueChangeCallback(text);
+		if (onTextChangeCallback)
+			onTextChangeCallback(std::static_pointer_cast<InputComponent>(shared_from_this()));
 			
 		Component::redraw();
 

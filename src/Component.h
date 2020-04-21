@@ -53,6 +53,8 @@ namespace Awincs
 		using Dimensions = Geometry::IntDimensions2D;
 		using ShouldParentHandleEvent	= Event::Handler::ShouldParentHandleEvent;
 		using RedrawCallback = std::function<void()>;
+		template<typename GComponent>
+		using OnEventCallback = std::function<void(std::shared_ptr<GComponent>)>;
 
 	public:
 		Component() = default;

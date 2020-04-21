@@ -11,10 +11,12 @@ namespace Awincs
 		public Component
 	{
 	public:
-		using OnValueChangeCallback = std::function<void(const std::wstring& value)>;
+		using OnInputEvent = OnEventCallback<InputComponent>;
 
 	public:
-		virtual void onValueChange(OnValueChangeCallback cb);
+		virtual const std::wstring& getText() const;
+		virtual void setText(std::wstring text);
+		virtual void onTextChange(OnInputEvent cb);
 		virtual ShouldParentHandleEvent handleEvent(const Event::Keyboard::InputEvent&) override;
 		virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::ButtonEvent& e) override;
 
@@ -30,6 +32,6 @@ namespace Awincs
 		static constexpr gp::ARGB DEFAULT_OUTLINE_COLOR = makeARGB(45, 122, 186);
 
 		std::wstring text = L"";
-		OnValueChangeCallback onValueChangeCallback;
+		OnInputEvent onTextChangeCallback;
 	};
 }
