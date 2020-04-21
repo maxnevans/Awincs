@@ -56,7 +56,7 @@ namespace Awincs
         static constexpr gp::ARGB DEFAULT_TEXT_COLOR                                            = makeARGB(0x99, 0x99, 0x99);
         static constexpr gp::ARGB DEFAULT_HOVER_TEXT_COLOR                                      = makeARGB(0xff, 0xff, 0xff);
         static constexpr gp::ARGB DEFAULT_ACTIVE_TEXT_COLOR                                     = makeARGB(0xff, 0xff, 0xff);
-        static constexpr gp::StringAlignment DEFAULT_VERTICAL_ALIGNMENT                         = gp::StringAlignment::StringAlignmentCenter;
+        static constexpr gp::StringAlignment DEFAULT_VERTICAL_ALIGNMENT                         = gp::StringAlignment::StringAlignmentNear;
         static constexpr gp::StringAlignment DEFAULT_HORIZONTAL_ALIGNMENT                       = gp::StringAlignment::StringAlignmentNear;
         static constexpr Geometry::Point2D<gp::REAL> DEFAULT_TEXT_ANCHOR_POINT                  = { 0, 0 };
         static constexpr float DEFAULT_OPACITY                                                  = 1;
