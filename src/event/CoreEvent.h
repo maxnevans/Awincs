@@ -4,10 +4,10 @@
 
 namespace Awincs
 {
-	namespace ComponentEvent
-	{
-		struct CoreEvent
-		{
-		};
-	}
+    namespace ComponentEvent
+    {
+        struct CoreEvent
+        {
+        };
+    }
 }

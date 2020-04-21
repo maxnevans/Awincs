@@ -5,11 +5,11 @@
 namespace Awincs
 {
 
-	class WindowControllerException
-		:
-		public Exception
-	{
-	public:
-		using Exception::Exception;
-	};
+    class WindowControllerException
+        :
+        public Exception
+    {
+    public:
+        using Exception::Exception;
+    };
 }

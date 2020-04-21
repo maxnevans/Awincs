@@ -3,14 +3,14 @@
 
 namespace Awincs
 {
-	class Exception
-	{
-	public:
-		Exception() = default;
-		Exception(std::wstring message) : message(message) {}
-		virtual const std::wstring& what() const noexcept { return message; }
+    class Exception
+    {
+    public:
+        Exception() = default;
+        Exception(std::wstring message) : message(message) {}
+        virtual const std::wstring& what() const noexcept { return message; }
 
-	private:
-		std::wstring message;
-	};
+    private:
+        std::wstring message;
+    };
 }
