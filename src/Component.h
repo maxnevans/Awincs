@@ -55,9 +55,11 @@ namespace Awincs
         using RedrawCallback = std::function<void()>;
         template<typename GComponent>
         using OnEventCallback = std::function<void(std::shared_ptr<GComponent>)>;
+        using OnStateChangeCallback = std::function<void(ComponentState current, ComponentState next)>;
+        using OnFocusChangeCallback = std::function<void(bool isFocused)>;
 
     public:
-        Component() = default;
+        Component();
         Component(const Point& anchorPoint, const Dimensions& dims);
         virtual void setDimensions(const Dimensions& dims);
         virtual const Dimensions& getDimensions() const;
@@ -112,6 +114,8 @@ namespace Awincs
         Point p_getGlobalAnchorPoint() const;
         Point p_transformToLocalPoint(const Point& point) const;
         bool p_isFocused() const;
+        void p_onStateChange(OnStateChangeCallback cb);
+        void p_onFocusChange(OnFocusChangeCallback cb);
 
 
     private:
@@ -124,8 +128,7 @@ namespace Awincs
                     if (child->checkAffiliationIgnoreChildren(e.point))
                     {
                         adaptMouseEventToHandler(e, child);
-                        auto handler = getMouseEventComponentHandler(child, e);
-                        return handler ? handler : child;
+                        return child;
                     }
 
             return nullptr;
@@ -174,6 +177,8 @@ namespace Awincs
         RedrawCallback redrawCallback                                   = nullptr;
         std::shared_ptr<Component>* focusedComponent                    = nullptr;
         ComponentState state                                            = ComponentState::DEFAULT;
+        OnStateChangeCallback onStateChangeCallback                     = nullptr;
+        OnFocusChangeCallback onFocusChangeCallback                     = nullptr;
         std::vector<std::shared_ptr<Component>> children;
         std::weak_ptr<Component> parent;
     };

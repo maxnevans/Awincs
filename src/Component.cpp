@@ -3,12 +3,23 @@
 
 namespace Awincs
 {
-    Component::Component(const Point& anchorPoint, const Dimensions& dims)
+    Component::Component()
         :
-        Component()
+        Component({}, {})
+    {
+    }
+
+    Component::Component(const Point& anchorPoint, const Dimensions& dims)
     {
         this->anchorPoint = anchorPoint;
         this->dimensions = dims;
+
+        p_onStateChange([this](ComponentState current, ComponentState next) {
+            Component::redraw();
+        });
+        p_onFocusChange([this](bool isFocused) {
+            Component::redraw();
+        });
     }
 
     void Component::setDimensions(const Dimensions& dims)
@@ -82,6 +93,16 @@ namespace Awincs
             return (*focusedComponent).get() == this;
 
         return false;
+    }
+
+    void Component::p_onStateChange(OnStateChangeCallback cb)
+    {
+        onStateChangeCallback = cb;
+    }
+
+    void Component::p_onFocusChange(OnFocusChangeCallback cb)
+    {
+        onFocusChangeCallback = cb;
     }
 
     std::shared_ptr<Component> Component::getFocusedComponent() const
@@ -229,12 +250,19 @@ namespace Awincs
         expect(focusedComponent);
 
         *focusedComponent = shared_from_this();
+
+        if (onFocusChangeCallback)
+            onFocusChangeCallback(true);
     }
 
     void Component::p_unsetFocusFromThisComponent()
     {
         expect(focusedComponent);
+
         *focusedComponent = nullptr;
+
+        if (onFocusChangeCallback)
+            onFocusChangeCallback(false);
     }
 
     void Component::p_setFocusComponentValue(std::shared_ptr<Component>* pComponent)
@@ -249,6 +277,9 @@ namespace Awincs
 
     void Component::p_setState(ComponentState state)
     {
+        if (onStateChangeCallback)
+            onStateChangeCallback(this->state, state);
+
         this->state = state;
     }
 
@@ -256,11 +287,11 @@ namespace Awincs
     {
         if (e.action == Event::Mouse::ButtonAction::DOWN)
         {
-            state = ComponentState::ACTIVE;
+            p_setState(ComponentState::ACTIVE);
         }
         else if (e.action == Event::Mouse::ButtonAction::UP)
         {
-            state = ComponentState::HOVER;
+            p_setState(ComponentState::HOVER);
         }
 
         return handleMouseEvent(e);
@@ -272,8 +303,8 @@ namespace Awincs
     }
     Component::ShouldParentHandleEvent Component::handleEvent(const Event::Mouse::Hover& event)
     {
-        auto e = event;
-        auto childHandler = getMouseEventComponentHandler(shared_from_this(), e);
+        auto eAdapted = event;
+        auto childHandler = getMouseEventComponentHandler(shared_from_this(), eAdapted);
         bool bothPresent = childHandler && hoveredChild;
         bool bothDoesNotPresent = !childHandler && !hoveredChild;
 
@@ -288,7 +319,7 @@ namespace Awincs
         /* Hover on same component */
         bool isTheSameComponent = childHandler.get() == hoveredChildPrev.get();
         if (bothPresent && isTheSameComponent)
-            return childHandler->handleEvent(adaptMouseEventToHandler(e, childHandler));
+            return childHandler->handleEvent(eAdapted);
 
         /* Hovered child changed */
 
@@ -299,7 +330,7 @@ namespace Awincs
             hoveredChildPrev->handleEvent(Event::Mouse::HoverEnd{});
 
             /* New child should receive Event::Mouse::HoverStart */
-            return childHandler->handleEvent(Event::Mouse::HoverStart{ adaptMouseEventToHandler(e, childHandler) });
+            return childHandler->handleEvent(Event::Mouse::HoverStart{ eAdapted });
         }
 
         /* One is present */
@@ -307,7 +338,7 @@ namespace Awincs
         if (childHandler)
         {
             /* New child should receive Event::Mouse::HoverStart */
-            return childHandler->handleEvent(Event::Mouse::HoverStart{ adaptMouseEventToHandler(e, childHandler) });
+            return childHandler->handleEvent(Event::Mouse::HoverStart{ eAdapted });
         }
 
         if (hoveredChildPrev)
@@ -323,12 +354,12 @@ namespace Awincs
     }
     Component::ShouldParentHandleEvent Component::handleEvent(const Event::Mouse::HoverStart& e)
     {
-        state = ComponentState::HOVER;
+       p_setState(ComponentState::HOVER);
         return handleMouseEvent(e);
     }
     Component::ShouldParentHandleEvent Component::handleEvent(const Event::Mouse::HoverEnd& e)
     {
-        state = ComponentState::DEFAULT;
+        p_setState(ComponentState::DEFAULT);
         return handleMouseEvent(e);
     }
     Component::ShouldParentHandleEvent Component::handleEvent(const Event::Keyboard::KeyEvent& e)
