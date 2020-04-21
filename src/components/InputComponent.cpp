@@ -50,7 +50,7 @@ namespace Awincs
 
         Component::redraw();
 
-        return true;
+        return false;
     }
 
     void InputComponent::draw(gp::Graphics& gfx) const

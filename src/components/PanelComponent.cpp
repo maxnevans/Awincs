@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "PanelComponent.h"
 
+#include <DebugConsole.h>
+
 #include "Geometry.h"
 
 
@@ -126,13 +128,45 @@ namespace Awincs
 
     PanelComponent::ShouldParentHandleEvent PanelComponent::handleEvent(const Event::Mouse::ButtonEvent& e)
     {
+        auto prevState = p_getState();
+
+        bool shouldHandleEvent = Component::handleEvent(e);
+
+        if (shouldHandleEvent)
+        {
+            auto currState = p_getState();
+
+            if (e.action == Event::Mouse::ButtonAction::DOWN)
+            {
+                p_setFocusOnThisComponent();
+            }
+
+            if (prevState != currState)
+                Component::redraw();
+
+            return true;
+
+        }
+
+        return false;
+    }
+
+    PanelComponent::ShouldParentHandleEvent PanelComponent::handleEvent(const Event::Mouse::HoverStart& e)
+    {
+        DCONSOLE(L"PanelComponent: HoverStart()\n");
+
         bool shouldHandleEvent = Component::handleEvent(e);
         expect(shouldHandleEvent);
 
-        if (e.action == Event::Mouse::ButtonAction::DOWN)
-        {
-            p_setFocusOnThisComponent();
-        }
+        return true;
+    }
+
+    PanelComponent::ShouldParentHandleEvent PanelComponent::handleEvent(const Event::Mouse::HoverEnd& e)
+    {
+        DCONSOLE(L"PanelComponent: HoverEnd()\n");
+
+        bool shouldHandleEvent = Component::handleEvent(e);
+        expect(shouldHandleEvent);
 
         return true;
     }

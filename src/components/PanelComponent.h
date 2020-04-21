@@ -28,6 +28,8 @@ namespace Awincs
         virtual void setBackgroundImage(int resourceId, ComponentState state = ComponentState::DEFAULT);
         virtual void setOpacity(float opacity);
         virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::ButtonEvent& e) override;
+        virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::HoverStart& e) override;
+        virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::HoverEnd& e) override;
 
     protected:
         virtual void draw(gp::Graphics&) const override;
