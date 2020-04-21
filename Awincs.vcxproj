@@ -236,6 +236,7 @@
     <ClInclude Include="src\components\ButtonComponent.h" />
     <ClInclude Include="src\components\CloseButtonComponent.h" />
     <ClInclude Include="src\Component.h" />
+    <ClInclude Include="src\EntryPoint.h" />
     <ClInclude Include="src\Exception.h" />
     <ClInclude Include="src\components\InputComponent.h" />
     <ClInclude Include="src\components\PanelComponent.h" />

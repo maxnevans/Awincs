@@ -1,5 +1,6 @@
 #pragma once
 #include "../src/Exception.h"
+#include "../src/EntryPoint.h"
 #include "../src/WindowController.h"
 #include "../src/components/ButtonComponent.h"
 #include "../src/components/CloseButtonComponent.h"
