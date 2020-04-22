@@ -95,7 +95,15 @@ namespace Awincs
 
     protected:
         virtual gp::PointF p_transformToGlobal(const gp::PointF& p) const;
-        virtual Point p_transformToGlobal(const Point& p) const;
+        template<typename TPoint>
+        Geometry::Point2D<TPoint> p_transformToGlobal(const Geometry::Point2D<TPoint>& p) const
+        {
+            auto pp = p;
+            auto g = p_getGlobalAnchorPoint();
+            pp.x += static_cast<TPoint>(g.x);
+            pp.y += static_cast<TPoint>(g.y);
+            return  pp;
+        }
         virtual void draw(gp::Graphics&) const {}
         std::weak_ptr<Component> getParent();
         virtual void addChild(const std::shared_ptr<Component>& child);

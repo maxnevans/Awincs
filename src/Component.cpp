@@ -197,11 +197,6 @@ namespace Awincs
         return gp::PointF{ x + p.X, y + p.Y };
     }
 
-    Component::Point Component::p_transformToGlobal(const Point& p) const
-    {
-        return p_getGlobalAnchorPoint() + p;
-    }
-
     std::weak_ptr<Component> Component::getParent()
     {
         return parent;
