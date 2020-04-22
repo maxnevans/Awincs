@@ -35,8 +35,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     ULONG_PTR gdiplusToken;
     Gdiplus::GdiplusStartup(&gdiplusToken, &input, nullptr);
 
+#if !_DEBUG
     try
+#endif
     {
+    
         auto windows = Awincs::App(args);
         MSG msg;
         while (GetMessage(&msg, NULL, 0, 0))
@@ -45,6 +48,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
             TranslateMessage(&msg);
         }
     }
+#if !_DEBUG
     catch (Awincs::Exception& e)
     {
         std::wstringstream message;
@@ -55,6 +59,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     {
         MessageBox(NULL, L"Unknown exception happend!", L"Unknown Exception", MB_OK);
     }
+#endif
 
     Gdiplus::GdiplusShutdown(gdiplusToken);
 
