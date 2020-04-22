@@ -173,6 +173,7 @@ namespace Awincs
 
     void PanelComponent::p_setBold(bool enabled)
     {
+        isBold = enabled;
         if (isItalic)
         {
             fontStyle = enabled ? gp::FontStyle::FontStyleBoldItalic : gp::FontStyle::FontStyleItalic;
@@ -185,6 +186,7 @@ namespace Awincs
 
     void PanelComponent::p_setItalic(bool enabled)
     {
+        isItalic = enabled;
         if (isBold)
         {
             fontStyle = enabled ? gp::FontStyle::FontStyleBoldItalic : gp::FontStyle::FontStyleBold;
