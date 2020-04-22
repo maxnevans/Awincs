@@ -24,7 +24,7 @@ namespace Awincs
             gfx.FillRectangle(&gp::SolidBrush{ gp::Color{p_calculateColor(backgroundColors.at(state))} }, gp::Rect{ x, y, width, height });
         }
 
-        if (isTextShown)
+        if (isTextShown && !text.empty())
         {
             gfx.DrawString(text.c_str(), static_cast<INT>(text.size()),
                 &gp::Font{ fontFamily.c_str(), fontSize, fontStyle, DEFAULT_FONT_UNIT },
