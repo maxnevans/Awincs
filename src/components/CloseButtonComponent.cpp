@@ -20,9 +20,9 @@ namespace Awincs
 
         if (e.action == Event::Mouse::ButtonAction::DOWN && e.buttonType == Event::Mouse::ButtonType::LEFT)
         {
-            auto parent = getParent();
-            expect(parent);
-            parent->closeWindow();
+            auto wc = p_getWindowController();
+            expect(wc);
+            wc->closeWindow();
         }
 
         return true;
