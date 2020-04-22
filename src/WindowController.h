@@ -17,7 +17,7 @@ namespace Awincs
         using CaptureCallback = std::function<bool(Point)>;
 
     public:
-        WindowController() = default;
+        WindowController();
         WindowController(const Point& anchorPoint, const Dimensions& dims);
         WindowController(const WindowController&) = delete;
         WindowController& operator=(const WindowController&) = delete;
@@ -57,6 +57,8 @@ namespace Awincs
 
         void p_redraw();
         void p_setupDrawCallback(WinAPIWindow&);
+        virtual std::shared_ptr<WindowController> p_getWindowController() override;
+        virtual void p_setWindowController(const std::shared_ptr<WindowController>&) override;
 
         template<typename WindowEvent>
         ShouldParentHandleEvent p_handleWindowEvent(const WindowEvent& e)

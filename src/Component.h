@@ -42,6 +42,8 @@ namespace Awincs
         ACTIVE
     };
 
+    class WindowController;
+
     class Component
         :
         public std::enable_shared_from_this<Component>,
@@ -57,6 +59,7 @@ namespace Awincs
         using OnEventCallback = std::function<void(std::shared_ptr<GComponent>)>;
         using OnStateChangeCallback = std::function<void(ComponentState current, ComponentState next)>;
         using OnFocusChangeCallback = std::function<void(bool isFocused)>;
+        using OnWindowControllerChange = std::function<void(std::shared_ptr<WindowController>)>;
 
     public:
         Component();
@@ -79,6 +82,7 @@ namespace Awincs
         virtual void minimizeWindow() override;
         virtual void maximizeWindow() override;
         virtual bool isFocused() const;
+        virtual std::shared_ptr<WindowController> getWindowController() const;
         virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::ButtonEvent&) override;
         virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::WheelEvent&) override;
         virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::Hover&) override;
@@ -94,6 +98,7 @@ namespace Awincs
         virtual ShouldParentHandleEvent handleEvent(const Event::Window::RestoreEvent&) override;
 
     protected:
+        virtual void draw(gp::Graphics&) const {}
         virtual gp::PointF p_transformToGlobal(const gp::PointF& p) const;
         template<typename TPoint>
         Geometry::Point2D<TPoint> p_transformToGlobal(const Geometry::Point2D<TPoint>& p) const
@@ -104,8 +109,7 @@ namespace Awincs
             pp.y += static_cast<TPoint>(g.y);
             return  pp;
         }
-        virtual void draw(gp::Graphics&) const {}
-        std::weak_ptr<Component> getParent();
+        std::shared_ptr<Component> getParent();
         virtual void addChild(const std::shared_ptr<Component>& child);
         virtual void removeChild(const std::shared_ptr<Component>& child);
         virtual void p_draw(gp::Graphics& gfx);
@@ -124,7 +128,11 @@ namespace Awincs
         bool p_isFocused() const;
         void p_onStateChange(OnStateChangeCallback cb);
         void p_onFocusChange(OnFocusChangeCallback cb);
-
+        void p_onWindowControllerChange(OnWindowControllerChange cb);
+        virtual std::shared_ptr<WindowController> p_getWindowController();
+        virtual void p_setWindowController(const std::shared_ptr<WindowController>&);
+        void p_setParent(const std::shared_ptr<Component>& parent);
+        void p_unsetParent();
 
     private:
         template<typename GMouseEvent>
@@ -187,7 +195,9 @@ namespace Awincs
         ComponentState state                                            = ComponentState::DEFAULT;
         OnStateChangeCallback onStateChangeCallback                     = nullptr;
         OnFocusChangeCallback onFocusChangeCallback                     = nullptr;
+        OnWindowControllerChange onWindowControllerChange               = nullptr;
         std::vector<std::shared_ptr<Component>> children;
         std::weak_ptr<Component> parent;
+        std::weak_ptr<WindowController> windowController;
     };
 }

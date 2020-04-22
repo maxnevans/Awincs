@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "InputComponent.h"
 
+#include "WindowController.h"
+
 namespace Awincs
 {
     void InputComponent::onTextChange(OnInputEvent cb)

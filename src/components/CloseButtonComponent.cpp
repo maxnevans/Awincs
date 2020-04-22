@@ -3,6 +3,7 @@
 #include "CloseButtonComponent.h"
 
 #include "WindowStateHandler.h"
+#include "WindowController.h"
 
 namespace Awincs
 {
@@ -19,7 +20,7 @@ namespace Awincs
 
         if (e.action == Event::Mouse::ButtonAction::DOWN && e.buttonType == Event::Mouse::ButtonType::LEFT)
         {
-            auto parent = getParent().lock();
+            auto parent = getParent();
             expect(parent);
             parent->closeWindow();
         }

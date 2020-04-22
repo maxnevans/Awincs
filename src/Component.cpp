@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Component.h"
 
+#include "WindowController.h"
+
 namespace Awincs
 {
     Component::Component()
@@ -105,6 +107,50 @@ namespace Awincs
         onFocusChangeCallback = cb;
     }
 
+    void Component::p_onWindowControllerChange(OnWindowControllerChange cb)
+    {
+        onWindowControllerChange = cb;
+    }
+
+    std::shared_ptr<WindowController> Component::p_getWindowController()
+    {
+        return windowController.lock();
+    }
+
+    void Component::p_setWindowController(const std::shared_ptr<WindowController>& wc)
+    {
+        if (windowController.lock() != wc)
+        {
+            for (auto& child : children)
+                child->p_setWindowController(wc);
+
+            if (onWindowControllerChange)
+                onWindowControllerChange(wc);
+        }
+        windowController = wc;
+    }
+
+    void Component::p_setParent(const std::shared_ptr<Component>& parent)
+    {
+        /* To avoid recursive call for redraw */
+        redrawCallback = parent->redrawCallback;
+
+        parent->addChild(shared_from_this());
+        this->parent = parent;
+
+        p_setFocusComponentValue(parent->focusedComponent);
+        p_setWindowController(parent->p_getWindowController());
+    }
+
+    void Component::p_unsetParent()
+    {
+        redrawCallback = nullptr;
+        this->parent.reset();
+
+        p_setFocusComponentValue(nullptr);
+        p_setWindowController(nullptr);
+    }
+
     std::shared_ptr<Component> Component::getFocusedComponent() const
     {
         return focusedComponent ? *focusedComponent : nullptr;
@@ -122,21 +168,12 @@ namespace Awincs
 
     void Component::setParent(const std::shared_ptr<Component>& parent)
     {
-        /* To avoid recursive call for redraw */
-        redrawCallback = parent->redrawCallback;
-
-        parent->addChild(shared_from_this());
-        this->parent = parent;
-
-        focusedComponent = parent->focusedComponent;
+        p_setParent(parent);
     }
 
     void Component::unsetParent()
     {
-        redrawCallback = nullptr;
-        this->parent.reset();
-
-        focusedComponent = nullptr;
+        p_unsetParent();
     }
 
     void Component::redraw()
@@ -169,21 +206,21 @@ namespace Awincs
 
     void Component::closeWindow()
     {
-        auto parent = getParent().lock();
+        auto parent = getParent();
         expect(parent);
         parent->closeWindow();
     }
 
     void Component::minimizeWindow()
     {
-        auto parent = getParent().lock();
+        auto parent = getParent();
         expect(parent);
         parent->minimizeWindow();
     }
 
     void Component::maximizeWindow()
     {
-        auto parent = getParent().lock();
+        auto parent = getParent();
         expect(parent);
         parent->maximizeWindow();
     }
@@ -191,15 +228,19 @@ namespace Awincs
     {
         return p_isFocused();
     }
+    std::shared_ptr<WindowController> Component::getWindowController() const
+    {
+        return windowController.lock();
+    }
     gp::PointF Component::p_transformToGlobal(const gp::PointF& p) const
     {
         auto [x, y] = p_getGlobalAnchorPoint();
         return gp::PointF{ x + p.X, y + p.Y };
     }
 
-    std::weak_ptr<Component> Component::getParent()
+    std::shared_ptr<Component> Component::getParent()
     {
-        return parent;
+        return parent.lock();
     }
 
     void Component::addChild(const std::shared_ptr<Component>& child)

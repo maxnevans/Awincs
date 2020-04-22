@@ -4,6 +4,7 @@
 #include <DebugConsole.h>
 
 #include "Geometry.h"
+#include "WindowController.h"
 
 namespace Awincs
 {

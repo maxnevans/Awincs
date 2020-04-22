@@ -7,6 +7,11 @@
 
 namespace Awincs
 {
+    WindowController::WindowController()
+        :
+        WindowController({}, {})
+    {
+    }
     WindowController::WindowController(const Point& anchorPoint, const Dimensions& dims)
         :
         Component({0, 0}, dims),
@@ -187,6 +192,13 @@ namespace Awincs
         {
             this->p_draw(gfx);
         });
+    }
+    std::shared_ptr<WindowController> WindowController::p_getWindowController()
+    {
+        return std::static_pointer_cast<WindowController>(shared_from_this());
+    }
+    void WindowController::p_setWindowController(const std::shared_ptr<WindowController>&)
+    {
     }
 }
 
