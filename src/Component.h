@@ -60,6 +60,8 @@ namespace Awincs
         using OnStateChangeCallback = std::function<void(ComponentState current, ComponentState next)>;
         using OnFocusChangeCallback = std::function<void(bool isFocused)>;
         using OnWindowControllerChange = std::function<void(std::shared_ptr<WindowController>)>;
+        using OnDimensionsChange = std::function<void(const Dimensions& current, const Dimensions& next)>;
+        using OnAnchorPointChange = std::function<void(const Point& current, const Point& next)>;
 
     public:
         Component();
@@ -133,6 +135,8 @@ namespace Awincs
         virtual void p_setWindowController(const std::shared_ptr<WindowController>&);
         void p_setParent(const std::shared_ptr<Component>& parent);
         void p_unsetParent();
+        void p_onDimensionsChange(OnDimensionsChange cb);
+        void p_onAnchorPointChange(OnAnchorPointChange cb);
 
     private:
         template<typename GMouseEvent>
@@ -196,6 +200,8 @@ namespace Awincs
         OnStateChangeCallback onStateChangeCallback                     = nullptr;
         OnFocusChangeCallback onFocusChangeCallback                     = nullptr;
         OnWindowControllerChange onWindowControllerChange               = nullptr;
+        OnDimensionsChange onDimensionsChange                           = nullptr;
+        OnAnchorPointChange onAnchorPointChange                         = nullptr;
         std::vector<std::shared_ptr<Component>> children;
         std::weak_ptr<Component> parent;
         std::weak_ptr<WindowController> windowController;

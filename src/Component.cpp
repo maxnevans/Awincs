@@ -56,6 +56,9 @@ namespace Awincs
 
     void Component::p_setDimensions(const Component::Dimensions& dims)
     {
+        if (dims != this->dimensions && onDimensionsChange)
+            onDimensionsChange(this->dimensions, dims);
+
         this->dimensions = dims;
     }
 
@@ -66,6 +69,9 @@ namespace Awincs
 
     void Component::p_setAnchorPoint(const Component::Point& point)
     {
+        if (this->anchorPoint != point && onAnchorPointChange)
+            onAnchorPointChange(this->anchorPoint, point);
+
         this->anchorPoint = point;
     }
 
@@ -149,6 +155,16 @@ namespace Awincs
 
         p_setFocusComponentValue(nullptr);
         p_setWindowController(nullptr);
+    }
+
+    void Component::p_onDimensionsChange(OnDimensionsChange cb)
+    {
+        onDimensionsChange = cb;
+    }
+
+    void Component::p_onAnchorPointChange(OnAnchorPointChange cb)
+    {
+        onAnchorPointChange = cb;
     }
 
     std::shared_ptr<Component> Component::getFocusedComponent() const
