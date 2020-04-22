@@ -69,8 +69,6 @@ namespace Awincs
         auto shouldHandle = Component::handleEvent(e);
         expect(shouldHandle);
 
-        Component::redraw();
-
         DCONSOLE(L"ButtonComponent: HoverStart\n");
         return true;
     }
@@ -79,8 +77,6 @@ namespace Awincs
     {
         auto shouldHandle = Component::handleEvent(e);
         expect(shouldHandle);
-
-        Component::redraw();
 
         DCONSOLE(L"ButtonComponent: HoverEnd\n");
         return true;
