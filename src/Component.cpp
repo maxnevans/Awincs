@@ -12,6 +12,8 @@ namespace Awincs
     }
 
     Component::Component(const Point& anchorPoint, const Dimensions& dims)
+        :
+        std::enable_shared_from_this<Component>()
     {
         this->anchorPoint = anchorPoint;
         this->dimensions = dims;
@@ -141,7 +143,7 @@ namespace Awincs
         /* To avoid recursive call for redraw */
         redrawCallback = parent->redrawCallback;
 
-        parent->addChild(shared_from_this());
+        parent->p_addChild(shared_from_this());
         this->parent = parent;
 
         p_setFocusComponentValue(parent->focusedComponent);
@@ -222,21 +224,21 @@ namespace Awincs
 
     void Component::closeWindow()
     {
-        auto parent = getParent();
+        auto parent = p_getParent();
         expect(parent);
         parent->closeWindow();
     }
 
     void Component::minimizeWindow()
     {
-        auto parent = getParent();
+        auto parent = p_getParent();
         expect(parent);
         parent->minimizeWindow();
     }
 
     void Component::maximizeWindow()
     {
-        auto parent = getParent();
+        auto parent = p_getParent();
         expect(parent);
         parent->maximizeWindow();
     }
@@ -254,17 +256,17 @@ namespace Awincs
         return gp::PointF{ x + p.X, y + p.Y };
     }
 
-    std::shared_ptr<Component> Component::getParent()
+    std::shared_ptr<Component> Component::p_getParent()
     {
         return parent.lock();
     }
 
-    void Component::addChild(const std::shared_ptr<Component>& child)
+    void Component::p_addChild(const std::shared_ptr<Component>& child)
     {
         children.push_back(child);
     }
 
-    void Component::removeChild(const std::shared_ptr<Component>& child)
+    void Component::p_removeChild(const std::shared_ptr<Component>& child)
     {
         auto index = std::find(children.begin(), children.end(), child);
 

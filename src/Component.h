@@ -111,9 +111,9 @@ namespace Awincs
             pp.y += static_cast<TPoint>(g.y);
             return  pp;
         }
-        std::shared_ptr<Component> getParent();
-        virtual void addChild(const std::shared_ptr<Component>& child);
-        virtual void removeChild(const std::shared_ptr<Component>& child);
+        std::shared_ptr<Component> p_getParent();
+        virtual void p_addChild(const std::shared_ptr<Component>& child);
+        virtual void p_removeChild(const std::shared_ptr<Component>& child);
         virtual void p_draw(gp::Graphics& gfx);
         void p_setRedrawCallback(RedrawCallback cb);
         void p_setFocusOnThisComponent();
