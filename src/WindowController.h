@@ -43,6 +43,7 @@ namespace Awincs
         virtual void minimizeWindow() override;
         virtual void maximizeWindow() override;
         virtual void setFocusOnThisComponent();
+        virtual void processMessages();
         
         virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Keyboard::InputEvent&) override;
         virtual ShouldParentHandleEvent handleEvent(const ComponentEvent::Keyboard::KeyEvent&) override;

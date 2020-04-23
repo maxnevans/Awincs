@@ -114,6 +114,11 @@ namespace Awincs
         expect(false);
     }
 
+    void WindowController::processMessages()
+    {
+        window->processMessages();
+    }
+
     WindowController::ShouldParentHandleEvent WindowController::handleEvent(const ComponentEvent::Keyboard::InputEvent& e)
     {
         return handleKeyboardEvent(e);
