@@ -29,6 +29,11 @@ namespace Awincs
         this->closeButton->setAnchorPoint({ d.width - d.height, 0 });
     }
 
+    std::shared_ptr<CloseButtonComponent> TitleBarComponent::getCloseButton()
+    {
+        return p_getCloseButton();
+    }
+
     void TitleBarComponent::p_setMoveCapture(const std::shared_ptr<WindowController>& wc)
     {
         auto moveCapture = [this](Point p) {
@@ -41,6 +46,10 @@ namespace Awincs
     {
         if (wc)
             wc->setMoveCapture(nullptr);
+    }
+    std::shared_ptr<CloseButtonComponent> TitleBarComponent::p_getCloseButton()
+    {
+        return closeButton;
     }
     void TitleBarComponent::p_setupCallbacks()
     {

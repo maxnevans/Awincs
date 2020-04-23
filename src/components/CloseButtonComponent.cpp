@@ -13,6 +13,10 @@ namespace Awincs
         p_setBackgroundColor(DEFAULT_HOVER_BACKGROUND_COLOR, ComponentState::HOVER);
         p_setBackgroundColor(DEFAULT_ACTIVE_BACKGROUND_COLOR, ComponentState::ACTIVE);
     }
+    void CloseButtonComponent::setCrossColor(gp::ARGB color, ComponentState state)
+    {
+        p_setCrossColor(color, state);
+    }
     CloseButtonComponent::ShouldParentHandleEvent CloseButtonComponent::handleEvent(const Event::Mouse::ButtonEvent& e)
     {
         auto shouldHandle = ButtonComponent::handleEvent(e);
@@ -44,6 +48,10 @@ namespace Awincs
 
         gfx.DrawLine(&pen, prepared[0], prepared[1]);
         gfx.DrawLine(&pen, prepared[2], prepared[3]);
+    }
+    void CloseButtonComponent::p_setCrossColor(gp::ARGB color, ComponentState state)
+    {
+        crossColors[state] = color;
     }
     std::vector<CloseButtonComponent::FltPoint> CloseButtonComponent::p_transformVertices(std::vector<FltPoint> vtcs) const
     {

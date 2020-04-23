@@ -14,12 +14,14 @@ namespace Awincs
         using FltPoint = Geometry::Point2D<float>;
     public:
         CloseButtonComponent();
+        virtual void setCrossColor(gp::ARGB color, ComponentState state = ComponentState::DEFAULT);
 
         /* Event handlers */
         virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::ButtonEvent&) override;
 
     protected:
         virtual void draw(gp::Graphics&) const override;
+        void p_setCrossColor(gp::ARGB color, ComponentState state = ComponentState::DEFAULT);
 
         std::vector<FltPoint> p_transformVertices(std::vector<FltPoint>) const;
 
@@ -33,7 +35,7 @@ namespace Awincs
         static constexpr gp::REAL DEFAULT_CROSS_WIDTH                               = 2.f;
         static constexpr FltPoint DEFAULT_CROSS_VERTICES[]                          = { {-1.0f,  1.0f}, { 1.0f, -1.0f},   // top left to bottom right
                                                                                         { 1.0f,  1.0f}, {-1.0f, -1.0f} }; // top right to bottom left
-        static constexpr float DEFAULT_CROSS_SIZE                                   = .5f;
+        static constexpr float DEFAULT_CROSS_SIZE                                   = .3f;
 
         std::map<ComponentState, gp::ARGB> crossColors                              = { {ComponentState::DEFAULT, DEFAULT_CROSS_COLOR},
                                                                                         {ComponentState::HOVER,   DEFAULT_HOVER_CROSS_COLOR},
