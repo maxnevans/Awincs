@@ -51,7 +51,7 @@ namespace Awincs
 
         DCONSOLE(L"Button component event handling: coordinates(" << e.point.x << L"," << e.point.y << L")\n");
 
-        return true;
+        return false;
     }
 
     ButtonComponent::ShouldParentHandleEvent ButtonComponent::handleEvent(const Event::Keyboard::KeyEvent& e)

@@ -129,24 +129,12 @@ namespace Awincs
 
     PanelComponent::ShouldParentHandleEvent PanelComponent::handleEvent(const Event::Mouse::ButtonEvent& e)
     {
-        auto prevState = p_getState();
-
         bool shouldHandleEvent = Component::handleEvent(e);
 
         if (shouldHandleEvent)
         {
-            auto currState = p_getState();
-
-            if (e.action == Event::Mouse::ButtonAction::DOWN)
-            {
-                p_setFocusOnThisComponent();
-            }
-
-            if (prevState != currState)
-                Component::redraw();
-
+            p_setFocusOnThisComponent();
             return true;
-
         }
 
         return false;
