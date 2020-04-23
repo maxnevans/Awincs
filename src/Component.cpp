@@ -2,6 +2,7 @@
 #include "Component.h"
 
 #include "WindowController.h"
+#include "ComponentException.h"
 
 namespace Awincs
 {
@@ -24,6 +25,23 @@ namespace Awincs
         p_onFocusChange([this](bool isFocused) {
             Component::redraw();
         });
+    }
+
+    void Component::show()
+    {
+        throw ComponentException(L"Not implemented yet! Please use setParent and unsetParent instead!");
+        //p_show();
+    }
+
+    void Component::hide()
+    {
+        throw ComponentException(L"Not implemented yet! Please use setParent and unsetParent instead!");
+        //p_hide();
+    }
+
+    bool Component::isShown()
+    {
+        return p_isShown();
     }
 
     void Component::setDimensions(const Dimensions& dims)
@@ -153,7 +171,10 @@ namespace Awincs
     void Component::p_unsetParent()
     {
         redrawCallback = nullptr;
-        this->parent.reset();
+        if (auto p = parent.lock())
+            p->p_removeChild(shared_from_this());
+
+        parent.reset();
 
         p_setFocusComponentValue(nullptr);
         p_setWindowController(nullptr);
@@ -167,6 +188,21 @@ namespace Awincs
     void Component::p_onAnchorPointChange(OnAnchorPointChange cb)
     {
         onAnchorPointChange = cb;
+    }
+
+    void Component::p_show()
+    {
+        m_isShown = true;
+    }
+
+    void Component::p_hide()
+    {
+        m_isShown = false;
+    }
+
+    bool Component::p_isShown()
+    {
+        return m_isShown;
     }
 
     std::shared_ptr<Component> Component::getFocusedComponent() const
@@ -268,29 +304,32 @@ namespace Awincs
 
     void Component::p_removeChild(const std::shared_ptr<Component>& child)
     {
-        auto index = std::find(children.begin(), children.end(), child);
+        auto condition = [child](const std::shared_ptr<Component>& c) { return child.get() == c.get(); };
+        auto index = std::find_if(children.begin(), children.end(), condition);
 
-        auto removed = children.erase(index);
+        expect(index != children.end());
 
-        expect(removed != children.end());
+        children.erase(index);
     }
     void Component::p_draw(gp::Graphics& gfx)
     {
-        bool hasBeenRedrawn = shouldRedraw;
-        if (shouldRedraw)
+        if (m_isShown)
         {
-            shouldRedraw = false;
-            draw(gfx);
-        }
-        
-        for (const auto& child : children)
-        {
-            if (hasBeenRedrawn)
-                child->shouldRedraw = true;
+            bool hasBeenRedrawn = shouldRedraw;
+            if (shouldRedraw)
+            {
+                shouldRedraw = false;
+                draw(gfx);
+            }
 
-            child->p_draw(gfx);
-        }
-            
+            for (const auto& child : children)
+            {
+                if (hasBeenRedrawn)
+                    child->shouldRedraw = true;
+
+                child->p_draw(gfx);
+            }
+        }            
     }
 
     void Component::p_setRedrawCallback(RedrawCallback cb)

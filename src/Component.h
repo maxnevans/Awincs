@@ -66,6 +66,9 @@ namespace Awincs
     public:
         Component();
         Component(const Point& anchorPoint, const Dimensions& dims);
+        virtual void show();
+        virtual void hide();
+        virtual bool isShown();
         virtual void setDimensions(const Dimensions& dims);
         virtual const Dimensions& getDimensions() const;
         virtual void setAnchorPoint(const Point& point);
@@ -137,6 +140,9 @@ namespace Awincs
         void p_unsetParent();
         void p_onDimensionsChange(OnDimensionsChange cb);
         void p_onAnchorPointChange(OnAnchorPointChange cb);
+        void p_show();
+        void p_hide();
+        bool p_isShown();
 
     private:
         template<typename GMouseEvent>
@@ -197,6 +203,7 @@ namespace Awincs
         RedrawCallback redrawCallback                                   = nullptr;
         std::shared_ptr<Component>* focusedComponent                    = nullptr;
         ComponentState state                                            = ComponentState::DEFAULT;
+        bool m_isShown                                                  = true;
         OnStateChangeCallback onStateChangeCallback                     = nullptr;
         OnFocusChangeCallback onFocusChangeCallback                     = nullptr;
         OnWindowControllerChange onWindowControllerChange               = nullptr;
