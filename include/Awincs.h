@@ -7,3 +7,4 @@
 #include "../src/components/PanelComponent.h"
 #include "../src/components/InputComponent.h"
 #include "../src/components/TitleBarComponent.h"
+#include "../src/components/HistogramComponent.h"
