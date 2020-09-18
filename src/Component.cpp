@@ -230,6 +230,14 @@ namespace Awincs
         p_unsetParent();
     }
 
+    std::shared_ptr<Component> Component::getParent() const
+    {
+        if (auto parentComponent = parent.lock())
+            return parentComponent;
+        
+        return nullptr;
+    }
+
     void Component::setData(std::any data)
     {
         m_userData = data;

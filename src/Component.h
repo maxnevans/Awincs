@@ -80,6 +80,7 @@ namespace Awincs
         virtual void unsetFocusOnThisComponent();
         virtual void setParent(const std::shared_ptr<Component>& parent);
         virtual void unsetParent();
+        virtual std::shared_ptr<Component> getParent() const;
         virtual void redraw();
         virtual bool checkAffiliationIgnoreChildren(const Point& pt) const;
         virtual bool checkAffiliationDontIgnoreChildren(const Point&) const;
@@ -89,9 +90,9 @@ namespace Awincs
         virtual void setData(std::any data);
         virtual void unsetData();
         template<typename TData>
-        const TData& getData() const
+        TData getData() const
         {
-            return std::any_cast<TData&>(m_userData);
+            return std::any_cast<TData>(m_userData);
         }
         virtual bool isFocused() const;
         virtual std::shared_ptr<WindowController> getWindowController() const;
