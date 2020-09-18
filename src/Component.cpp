@@ -230,6 +230,16 @@ namespace Awincs
         p_unsetParent();
     }
 
+    void Component::setData(std::any data)
+    {
+        m_userData = data;
+    }
+
+    void Component::unsetData()
+    {
+        m_userData.reset();
+    }
+
     void Component::redraw()
     {
         shouldRedraw = true;

@@ -86,6 +86,13 @@ namespace Awincs
         virtual void closeWindow() override;
         virtual void minimizeWindow() override;
         virtual void maximizeWindow() override;
+        virtual void setData(std::any data);
+        virtual void unsetData();
+        template<typename TData>
+        const TData& getData() const
+        {
+            return std::any_cast<TData&>(m_userData);
+        }
         virtual bool isFocused() const;
         virtual std::shared_ptr<WindowController> getWindowController() const;
         virtual ShouldParentHandleEvent handleEvent(const Event::Mouse::ButtonEvent&) override;
@@ -204,6 +211,7 @@ namespace Awincs
         std::shared_ptr<Component>* focusedComponent                    = nullptr;
         ComponentState state                                            = ComponentState::DEFAULT;
         bool m_isShown                                                  = true;
+        std::any m_userData                                             = {};
         OnStateChangeCallback onStateChangeCallback                     = nullptr;
         OnFocusChangeCallback onFocusChangeCallback                     = nullptr;
         OnWindowControllerChange onWindowControllerChange               = nullptr;
