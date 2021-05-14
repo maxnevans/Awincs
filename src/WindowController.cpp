@@ -181,7 +181,8 @@ namespace Awincs
     void WindowController::draw(Gdiplus::Graphics& gfx) const
     {
         auto [width, height] = window->getDimensions();
-        gfx.FillRectangle(&gp::SolidBrush{ gp::Color{backgroundColor} }, gp::Rect{0, 0, width, height});
+        const gp::SolidBrush backgroundBrushColor = gp::SolidBrush{ gp::Color{backgroundColor} };
+        gfx.FillRectangle(&backgroundBrushColor, gp::Rect{0, 0, width, height});
     }
 
     void WindowController::p_redraw()

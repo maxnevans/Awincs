@@ -22,16 +22,19 @@ namespace Awincs
         }
         else
         {
-            gfx.FillRectangle(&gp::SolidBrush{ gp::Color{p_calculateColor(backgroundColors.at(state))} }, gp::Rect{ x, y, width, height });
+            const gp::SolidBrush backgroundBrushColor = gp::SolidBrush{ gp::Color{p_calculateColor(backgroundColors.at(state))} };
+            gfx.FillRectangle(&backgroundBrushColor, gp::Rect{ x, y, width, height });
         }
 
         if (isTextShown && !text.empty())
         {
+            const gp::Font textFont = gp::Font{ fontFamily.c_str(), fontSize, fontStyle, DEFAULT_FONT_UNIT };
+            const gp::SolidBrush textBrushColor = gp::SolidBrush(gp::Color{ p_calculateColor(textColors.at(state)) });
             gfx.DrawString(text.c_str(), static_cast<INT>(text.size()),
-                &gp::Font{ fontFamily.c_str(), fontSize, fontStyle, DEFAULT_FONT_UNIT },
+                &textFont,
                 p_transformToGlobal(textAnchorPoint),
                 &textFormat,
-                &gp::SolidBrush(gp::Color{ p_calculateColor(textColors.at(state)) }));
+                &textBrushColor);
         }
     }
 

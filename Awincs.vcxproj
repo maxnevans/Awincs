@@ -71,26 +71,26 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(ProjectDir)bin\</OutDir>
+    <OutDir>$(SolutionDir)bin\x86_Debug\</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
-    <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)bin\int_$(ProjectName)_x86_Debug\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(ProjectDir)bin\</OutDir>
+    <OutDir>$(SolutionDir)bin\x64_Debug\</OutDir>
     <TargetName>$(ProjectName)_x64_d</TargetName>
-    <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)bin\int_$(ProjectName)_x64_Debug\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(ProjectDir)bin\</OutDir>
-    <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)bin\x86\</OutDir>
+    <IntDir>$(SolutionDir)bin\int_$(ProjectName)_x86\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(ProjectDir)bin\</OutDir>
+    <OutDir>$(SolutionDir)bin\x64\</OutDir>
     <TargetName>$(ProjectName)_x64</TargetName>
-    <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)bin\int_$(ProjectName)_x64\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -258,6 +258,11 @@
     <ClInclude Include="src\WindowControllerException.h" />
     <ClInclude Include="src\WindowException.h" />
     <ClInclude Include="src\WindowStateHandler.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DebugConsole\DebugConsole.vcxproj">
+      <Project>{72cc32fd-8896-4520-815b-a894b10356c3}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

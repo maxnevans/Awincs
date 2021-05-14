@@ -109,18 +109,22 @@ namespace Awincs
     {
         auto [width, height] = p_getDimensions();
         auto [x, y] = p_transformToGlobal(Point{0,0});
+        const gp::SolidBrush backgroundBrushColor = gp::SolidBrush{ gp::Color{backgroundColors.at(p_getState())} };
 
-        gfx.FillRectangle(&gp::SolidBrush{ gp::Color{backgroundColors.at(p_getState())} }, gp::Rect{ x, y, width, height });
+        gfx.FillRectangle(&backgroundBrushColor, gp::Rect{ x, y, width, height });
 
         if (outlineWidth > 0 && p_isFocused())
         {
-            gfx.DrawRectangle(&gp::Pen{ gp::Color{outlineColors.at(p_getState())}, outlineWidth }, gp::Rect{ x, y, width, height });
+            const gp::Pen backgroundOutlinePenColor = gp::Pen{ gp::Color{outlineColors.at(p_getState())}, outlineWidth };
+            gfx.DrawRectangle(&backgroundOutlinePenColor, gp::Rect{ x, y, width, height });
         }
 
+        const gp::SolidBrush textBrushColor = gp::SolidBrush(gp::Color{ textColors.at(p_getState()) });
+        const gp::Font textFont = gp::Font{ fontFamily.c_str(), fontSize, fontStyle, fontUnit };
         gfx.DrawString(text.c_str(), static_cast<INT>(text.size()),
-            &gp::Font{ fontFamily.c_str(), fontSize, fontStyle, fontUnit},
+            &textFont,
             gp::PointF{ static_cast<gp::REAL>(x), static_cast<gp::REAL>(y) },
-            &gp::SolidBrush(gp::Color{ textColors.at(p_getState()) }));
+            &textBrushColor);
     }
     void InputComponent::p_setBackgroundColor(gp::ARGB color, ComponentState state)
     {

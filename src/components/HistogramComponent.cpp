@@ -53,7 +53,8 @@ namespace Awincs
         auto [width, height] = p_getDimensions();
 
         // Background
-        gfx.FillRectangle(&gp::SolidBrush{ gp::Color(235, 235, 235) }, gp::Rect{ x, y, width, height });
+        const gp::SolidBrush backgroudBrush = gp::SolidBrush{ gp::Color(235, 235, 235) };
+        gfx.FillRectangle(&backgroudBrush, gp::Rect{ x, y, width, height });
 
         // Data coordinates and Y-axis X coordinate calculation
         int yAxisXCoord = 0;
@@ -107,48 +108,57 @@ namespace Awincs
             {
                 auto columnHeight = static_cast<int>(yAxisAvailableHeight * (static_cast<double>(value) / yAxisRange.max));
                 auto yColumn = y + padding + paddingFromAxisEnd + yAxisAvailableHeight - columnHeight;
-                gfx.FillRectangle(&gp::SolidBrush{ gp::Color(135, 78, 173) }, gp::Rect{ xColumn, yColumn, columnWidth, columnHeight });
-                gfx.DrawRectangle(&gp::Pen(gp::Color::Gray, 0.5), gp::Rect{ xColumn, yColumn, columnWidth, columnHeight });
+                const gp::SolidBrush backgroundColorBrush = gp::SolidBrush{ gp::Color(135, 78, 173) };
+                const gp::Pen outlineColorPen = gp::Pen(gp::Color::Gray, 0.5);
+                const gp::Rect dataColumnRect = gp::Rect{ xColumn, yColumn, columnWidth, columnHeight };
+                gfx.FillRectangle(&backgroundColorBrush, dataColumnRect);
+                gfx.DrawRectangle(&outlineColorPen, dataColumnRect);
                 xColumn += columnWidth;
             }
         }
 
+        const gp::Pen axisColorPen = gp::Pen(gp::Color(51, 51, 51), 1);
+
         // Y-axis
-        gfx.DrawLine(&gp::Pen(gp::Color(51, 51, 51), 1),
+        gfx.DrawLine(&axisColorPen,
             gp::Point{ yAxisXCoord, y + padding },
             gp::Point{ yAxisXCoord, y + height - padding });
-        gfx.DrawLine(&gp::Pen(gp::Color(51, 51, 51), 1),
+        gfx.DrawLine(&axisColorPen,
             gp::Point{ yAxisXCoord, y + padding },
             gp::Point{ yAxisXCoord - 3, y + padding + 10 });
-        gfx.DrawLine(&gp::Pen(gp::Color(51, 51, 51), 1),
+        gfx.DrawLine(&axisColorPen,
             gp::Point{ yAxisXCoord, y + padding },
             gp::Point{ yAxisXCoord + 3, y + padding + 10 });
 
         // X-axis
-        gfx.DrawLine(&gp::Pen(gp::Color(51, 51, 51), 1),
+        gfx.DrawLine(&axisColorPen,
             gp::Point{ x + padding, y + height - padding },
             gp::Point{ x + width - padding, y + height - padding });
-        gfx.DrawLine(&gp::Pen(gp::Color(51, 51, 51), 1),
+        gfx.DrawLine(&axisColorPen,
             gp::Point{ x + width - padding - 10, y + height - padding - 3 },
             gp::Point{ x + width - padding, y + height - padding });
-        gfx.DrawLine(&gp::Pen(gp::Color(51, 51, 51), 1),
+        gfx.DrawLine(&axisColorPen,
             gp::Point{ x + width - padding - 10, y + height - padding + 3 },
             gp::Point{ x + width - padding, y + height - padding });
 
+        const gp::Font fontTahoma = gp::Font{ L"Tahoma", 10 };
+        const gp::StringFormat defaultStringFormat = gp::StringFormat();
+        const gp::SolidBrush axisFontColor = gp::SolidBrush(gp::Color(51, 51, 51));
+
         //Y-axis caption
         gfx.DrawString(yAxisCaption.c_str(), static_cast<INT>(yAxisCaption.size()),
-            &gp::Font{ L"Tahoma", 10 },
+            &fontTahoma,
             gp::PointF{ (gp::REAL)yAxisXCoord + 10, (gp::REAL)y + (gp::REAL)padding },
-            &gp::StringFormat(),
-            &gp::SolidBrush(gp::Color(51, 51, 51)));
+            &defaultStringFormat,
+            &axisFontColor);
         auto yMaxStringFormat = gp::StringFormat();
         yMaxStringFormat.SetAlignment(gp::StringAlignment::StringAlignmentFar);
         yMaxStringFormat.SetLineAlignment(gp::StringAlignment::StringAlignmentFar);
         gfx.DrawString(m_YAxisMaxCaption.c_str(), static_cast<INT>(m_YAxisMaxCaption.size()),
-            &gp::Font{ L"Tahoma", 10 },
+            &fontTahoma,
             gp::PointF{ (gp::REAL)yAxisXCoord - 2, (gp::REAL)y + (gp::REAL)padding + paddingFromAxisEnd },
             &yMaxStringFormat,
-            &gp::SolidBrush(gp::Color(51, 51, 51)));
+            &axisFontColor);
 
         //X-axis caption
         auto stringFormat = gp::StringFormat();
@@ -156,10 +166,10 @@ namespace Awincs
         stringFormat.SetLineAlignment(gp::StringAlignment::StringAlignmentFar);
 
         gfx.DrawString(xAxisCaption.c_str(), static_cast<INT>(xAxisCaption.size()),
-            &gp::Font{ L"Tahoma", 10 },
+            &fontTahoma,
             gp::PointF{ (gp::REAL)x + width - padding, (gp::REAL)y + height - padding - 5 },
             & stringFormat,
-            &gp::SolidBrush(gp::Color(51, 51, 51)));
+            &axisFontColor);
 
         // X-axis lower bound caption
         if (!areEqual(xAxisRange.min, 0.0))
@@ -173,10 +183,10 @@ namespace Awincs
             auto xLowerCaption = ss.str();
 
             gfx.DrawString(xLowerCaption.c_str(), static_cast<INT>(xLowerCaption.size()),
-                &gp::Font{ L"Tahoma", 10 },
+                &fontTahoma,
                 gp::PointF{ (gp::REAL)xDataStart, (gp::REAL)y + height - padding + 5 },
                 &xCaptionStringFormat,
-                &gp::SolidBrush(gp::Color(51, 51, 51)));
+                &axisFontColor);
         }
 
         // X-axis higher bound caption
@@ -191,10 +201,10 @@ namespace Awincs
             auto xHigherBoundCaption = ss.str();
 
             gfx.DrawString(xHigherBoundCaption.c_str(), static_cast<INT>(xHigherBoundCaption.size()),
-                &gp::Font{ L"Tahoma", 10 },
+                &fontTahoma,
                 gp::PointF{ (gp::REAL)xDataEnd, (gp::REAL)y + height - padding + 5 },
-                & xCaptionStringFormat,
-                & gp::SolidBrush(gp::Color(51, 51, 51)));
+                &xCaptionStringFormat,
+                &axisFontColor);
         }
         
 
@@ -204,9 +214,9 @@ namespace Awincs
         zstringFormat.SetLineAlignment(gp::StringAlignment::StringAlignmentNear);
 
         gfx.DrawString(L"0", static_cast<INT>(1),
-            &gp::Font{ L"Tahoma", 10 },
+            &fontTahoma,
             gp::PointF{ (gp::REAL)yAxisXCoord, (gp::REAL)y + height - padding },
-            & zstringFormat,
-            &gp::SolidBrush(gp::Color(51, 51, 51)));
+            &zstringFormat,
+            &axisFontColor);
     }
 }
